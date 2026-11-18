@@ -6,9 +6,9 @@
 
 ## Fase 0 — Bootstrap e protocolo (pré-requisito de todas as demais)
 
-- [ ] **T001 — Criar módulo Go e estrutura mínima.** `go.mod`, `internal/protocol`, `internal/broker`, `pkg/pubsub`, `cmd/{broker,demo,loadgen}`, `integration`; compilar projetos mínimos sem serviço externo. **Aceite:** `go test ./...` executa; registrar versão Go e path do módulo no README.
-- [ ] **T002 — Configuração, flags e lifecycle de processos.** Config de B1/B2 e timeouts/limites por flag; validar id 1/2, endereços, sinal de encerramento e logs. **Aceite:** iniciar 2 processos UDP em localhost com portas diferentes; encerrar graciosamente, sem erro de data race.
-- [ ] **T003 — Implementar protocolo v1 e testes de contrato.** Envelope, types/codes, `Encode/Decode/Validate`, `request_id`, `message_id`, tamanho 1200 B **do JSON total**, UTF-8/payload RawMessage. **Aceite:** round-trip, limite exatamente no máximo, excesso, JSON malformado, campos ausentes e versão não suportada.
+- [x] **T001 — Criar módulo Go e estrutura mínima.** `go.mod`, `internal/protocol`, `internal/broker`, `pkg/pubsub`, `cmd/{broker,demo,loadgen}`, `integration`; compilar projetos mínimos sem serviço externo. **Aceite:** `go test ./...` executa; registrar versão Go e path do módulo no README.
+- [x] **T002 — Configuração, flags e lifecycle de processos.** Config de B1/B2 e timeouts/limites por flag; validar id 1/2, endereços, sinal de encerramento e logs. **Aceite:** iniciar 2 processos UDP em localhost com portas diferentes; encerrar graciosamente, sem erro de data race.
+- [x] **T003 — Implementar protocolo v1 e testes de contrato.** Envelope, types/codes, `Encode/Decode/Validate`, `request_id`, `message_id`, tamanho 1200 B **do JSON total**, UTF-8/payload RawMessage. **Aceite:** round-trip, limite exatamente no máximo, excesso, JSON malformado, campos ausentes e versão não suportada.
 - [ ] **T004 — Implementar controle genérico com retry/cache limitado.** Correlation ID, respostas OK/ERROR/ACK, reenvio da mesma requisição e idempotência por janela. **Aceite:** simular perda da primeira resposta e duplicata; operar exatamente uma vez **dentro da janela de cache**; timeout vira `ErrInconclusive` no cliente.
 
 ## Fase 1 — Broker local e isolamento

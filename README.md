@@ -1,6 +1,8 @@
 # Middleware Pub/Sub para Interação ao Vivo — SDD (Etapa 2)
 
-> **Status:** pacote de especificações para orientar implementação com Codex; **não contém o middleware implementado**.
+> **Estado da implementação:** T001–T003 concluídas: módulo Go, lifecycle UDP de broker e contrato JSON/UDP v1. Pub/Sub, sessões e a biblioteca cliente ainda pertencem às tarefas posteriores.
+
+> **Status:** implementação incremental; somente T001–T003 estão concluídas nesta revisão.
 > **Origem:** documento aprovado da Etapa 1 (10 páginas) e enunciado do projeto (5 páginas).
 > **Objetivo:** código Go no repositório, biblioteca pública utilizável, duas instâncias UDP, CLI de demonstração e testes/medições reproduzíveis.
 
@@ -35,6 +37,21 @@
 5. Ao implementar, substitua os exemplos marcados como **planejados** pelos comandos e assinaturas reais e teste-os antes de entregar.
 
 **Não é necessário instalar GitHub Spec Kit:** esta estrutura é **inspirada** nas convenções do Spec Kit, mas pode ser lida diretamente pelo Codex com `AGENTS.md`. Se a equipe decidir instalar a CLI oficial do Spec Kit, inicialize a integração separadamente e **não sobrescreva** estas especificações aprovadas.
+
+## Base implementada (T001–T003)
+
+- Módulo: `github.com/Neraky/pd-go-cenario-2-implementacao`; versão declarada: Go 1.26.
+- `internal/protocol` codifica, decodifica e valida envelopes JSON v1 em um único datagrama de no máximo **1200 bytes**. `PUBLISH` e `DELIVER` são dados best effort; esta base não adiciona ACK ou retry para eles.
+- `cmd/broker` inicia um listener UDP configurável e encerra graciosamente com `Ctrl+C`. O despacho Pub/Sub ainda não foi implementado.
+
+Para iniciar os dois listeners locais nesta etapa:
+
+```bash
+go run ./cmd/broker -id=1
+go run ./cmd/broker -id=2
+```
+
+Execute os testes com `go test ./...`. Os comandos de demo, carga e os fluxos Pub/Sub descritos neste documento continuam planejados até suas tarefas correspondentes.
 
 ## Limites assumidos
 

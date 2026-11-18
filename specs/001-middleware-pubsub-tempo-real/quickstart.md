@@ -1,6 +1,8 @@
 # Quickstart planejado — execução local e testes
 
-**ATENÇÃO:** este repositório, ao receber apenas o pacote SDD, ainda **não contém código**. Os comandos abaixo são o **contrato de usabilidade da Etapa 2**. O Codex deverá implementá-los em `cmd/` e **executá-los de verdade** antes da entrega; atualizar flags conforme necessário, sem desalinhar os exemplos.
+> **Estado da implementação:** T001–T003 fornecem o módulo Go, o processo UDP de broker e o protocolo JSON/UDP v1. Apenas a seção 1 é executável nesta iteração; os cenários Pub/Sub das seções seguintes continuam planejados.
+
+**ATENÇÃO:** as seções 2–7 continuam o **contrato de usabilidade da Etapa 2**. Seus comandos só serão executáveis após as tarefas correspondentes; atualizar flags conforme necessário, sem desalinhar os exemplos.
 
 ## Pré-requisitos
 
@@ -22,7 +24,7 @@ Terminal 2:
 go run ./cmd/broker -id=2 -listen=127.0.0.1:9002 -peer=127.0.0.1:9001
 ```
 
-Ambos devem indicar id, endereço, peer e estado do catálogo. **Criar tópicos apenas com B1 disponível**; B2 encaminha mutações para B1.
+Ambos devem indicar id, endereço e peer e encerrar graciosamente com `Ctrl+C`. Nesta etapa o listener ainda não processa operações de catálogo ou Pub/Sub.
 
 ## 2. Criar tópico e assinar no outro broker
 

@@ -1,6 +1,8 @@
 # Biblioteca Go do middleware — documentação prevista
 
-> **Status:** contrato de documentação da biblioteca a ser entregue. O código **ainda não existe** neste pacote. A API pública proposta está em `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; o Codex deve ajustar este arquivo para que **todos os exemplos compilem** após a implementação.
+> **Estado da implementação:** o módulo e o pacote `pkg/pubsub` existem desde T001, mas a biblioteca cliente será implementada em T021–T025. A API abaixo é planejada e seus exemplos ainda não compilam; ela não deve ser apresentada como uso disponível.
+
+> **Status:** contrato de documentação para a API que será entregue. A API pública proposta está em `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; este arquivo será ajustado para que os exemplos compilem após sua implementação.
 
 ## Para que serve
 
@@ -10,13 +12,13 @@ Ela **não** promete entrega de todas as publicações, ordenação, deduplicaç
 
 ## Instalação
 
-O módulo Go (ex.: `github.com/SEU-ORG/SEU-REPO`) será criado em T001. O import final será:
+O módulo Go criado em T001 é `github.com/Neraky/pd-go-cenario-2-implementacao`. Quando a API for implementada, o import será:
 
 ```go
-import "<CAMINHO_DO_MODULO>/pkg/pubsub"
+import "github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
 ```
 
-**Substituir** `<CAMINHO_DO_MODULO>` pelo caminho real de `go.mod` após criar o repositório. Não publicar instruções de `go get` inexistentes.
+Não publicar instruções de `go get` inexistentes. O pacote ainda não oferece `Client` ou os demais tipos públicos.
 
 ## Uso esperado
 
