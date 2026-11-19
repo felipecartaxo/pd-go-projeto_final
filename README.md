@@ -1,8 +1,8 @@
 # Middleware Pub/Sub para Interação ao Vivo — SDD (Etapa 2)
 
-> **Estado da implementação:** T001–T003 concluídas: módulo Go, lifecycle UDP de broker e contrato JSON/UDP v1. Pub/Sub, sessões e a biblioteca cliente ainda pertencem às tarefas posteriores.
+> **Estado da implementação:** T001–T007 concluídas: módulo Go, lifecycle UDP de broker, protocolo JSON/UDP v1 e controle local de sessões, catálogo e inscrições. Entrega de dados (`PUBLISH`/`DELIVER`) e biblioteca cliente ainda pertencem às tarefas posteriores.
 
-> **Status:** implementação incremental; somente T001–T003 estão concluídas nesta revisão.
+> **Status:** implementação incremental; T001–T007 estão concluídas nesta revisão.
 > **Origem:** documento aprovado da Etapa 1 (10 páginas) e enunciado do projeto (5 páginas).
 > **Objetivo:** código Go no repositório, biblioteca pública utilizável, duas instâncias UDP, CLI de demonstração e testes/medições reproduzíveis.
 
@@ -38,11 +38,12 @@
 
 **Não é necessário instalar GitHub Spec Kit:** esta estrutura é **inspirada** nas convenções do Spec Kit, mas pode ser lida diretamente pelo Codex com `AGENTS.md`. Se a equipe decidir instalar a CLI oficial do Spec Kit, inicialize a integração separadamente e **não sobrescreva** estas especificações aprovadas.
 
-## Base implementada (T001–T003)
+## Base implementada (T001–T007)
 
 - Módulo: `github.com/Neraky/pd-go-cenario-2-implementacao`; versão declarada: Go 1.26.
 - `internal/protocol` codifica, decodifica e valida envelopes JSON v1 em um único datagrama de no máximo **1200 bytes**. `PUBLISH` e `DELIVER` são dados best effort; esta base não adiciona ACK ou retry para eles.
-- `cmd/broker` inicia um listener UDP configurável e encerra graciosamente com `Ctrl+C`. O despacho Pub/Sub ainda não foi implementado.
+- `cmd/broker` inicia um listener UDP configurável e encerra graciosamente com `Ctrl+C`. Ele processa `REGISTER`, `HEARTBEAT`, `CREATE_TOPIC`, `DELETE_TOPIC`, `SUBSCRIBE` e `UNSUBSCRIBE`, com cache de respostas idempotentes limitado (20 s/1024 entradas por default).
+- O Broker 1 mantém catálogo e inscrições locais em memória; Broker 2 responde `COORDINATOR_UNAVAILABLE` a mutações de catálogo até T016 integrar o encaminhamento a B1. Não há `PUBLISH`, `DELIVER`, filas de dados nem fan-out nesta etapa.
 
 Para iniciar os dois listeners locais nesta etapa:
 

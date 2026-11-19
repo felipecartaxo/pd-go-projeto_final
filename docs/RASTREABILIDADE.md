@@ -8,15 +8,15 @@ Documentos de origem:
 | Fonte / decisão | Requisitos SDD | Tarefas | Testes |
 |---|---|---|---|
 | Cenário C: baixa latência, carga alta, audiência heterogênea | RNF01–RNF04, US04, US06 | T008–T012, T028–T029 | CT07–CT09, W01–W03 |
-| Etapa 1 §2.1 item 1: Pub/Sub desacoplado | RF03–RF04, US02 | T007, T010, T022–T023 | CT03–CT04 |
+| Etapa 1 §2.1 item 1: Pub/Sub desacoplado | RF03–RF04, US02 | T007, T010, T022–T023 | `internal/broker/control_test.go` (inscrições); CT03–CT04 |
 | Etapa 1 §2.1 item 2: dois brokers fixos | RF07–RF09, US03 | T013–T020, T024 | CT10–CT16 |
 | Etapa 1 §2.1 item 3: memória e best effort | RF04, RF06, P2 da constituição | T010–T011, T023 | CT03, CT05, CT19 |
 | Etapa 1 §2.1 item 4: limitação e filas | RF10–RF11, US04 | T008–T009, T012 | CT07–CT09, W02–W03 |
-| Etapa 1 §2.1 item 5: UDP + sessões | RF01, RF14 | T003, T005, T021 | CT01, CT19 |
+| Etapa 1 §2.1 item 5: UDP + sessões | RF01, RF14 | T003, T005, T021 | `internal/broker/control_test.go` (sessões); CT01, CT19 |
 | Etapa 1 §2.1 item 6: interesse e encaminhamento | RF07–RF08 | T014–T015 | CT10–CT12 |
 | Etapa 1 §2.1 item 7: recuperação de inscrições | RF12, US05 | T024–T025 | CT14, W04 |
 | Etapa 1 §2.1 item 8: B1 catálogo, B2 cópia | RF02, RF09, US01 | T006, T016–T019 | CT02, CT13, CT15–CT17 |
-| Etapa 1 §3.2: JSON, ACKs e mensagens | RF05, RF06, RF13–RF14 | T003–T004, T011, T016–T018 | CT05–CT06, CT17–CT19 |
+| Etapa 1 §3.2: JSON, ACKs e mensagens | RF05, RF06, RF13–RF14 | T003–T004, T011, T016–T018 | `internal/control/retry_test.go`; CT05–CT06, CT17–CT19 |
 | Etapa 1 §3.3: PEER_SYNC, TTL, drop-oldest | RF01, RF09–RF13 | T005, T008–T009, T018–T019 | CT01, CT08, CT15–CT17 |
 | Enunciado item 3: tópicos, inscrições, descarte, buffer, transparência | RF02–RF05, RF11–RF12 | T006–T011, T021–T024 | CT02–CT09, CT14 |
 | Enunciado item 4: clientes/medições | RF15–RF16 | T027–T029 | W01–W04 |

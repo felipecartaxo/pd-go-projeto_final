@@ -74,6 +74,13 @@
 - **Proposta:** registrar p50/p95/p99, taxa de entrega **observada**, perda/descartes, fairness e failover. Metas numéricas são **hipóteses locais de avaliação**, não SLA nem requisito docente; consultar `docs/METRICAS.md`.
 - **Situação:** **VALIDADO**.
 
+## D11 — Janela limitada de idempotência de controle
+
+- **Contrato:** controle deve reutilizar `request_id`, sofrer retry finito e ser idempotente dentro de uma janela delimitada, sem prometer execução única para falhas arbitrárias.
+- **Escolha de implementação:** o broker guarda a resposta por chave (`type`, origem UDP, `request_id`) em cache limitado e configurável; os defaults são TTL de 20 s e capacidade de 1024 entradas, já propostos no modelo de dados. O retry que esgota tentativas retorna `ErrInconclusive` localmente.
+- **Impacto:** uma repetição dentro da janela devolve a resposta original sem reaplicar a mutação. Após expiração/evicção, não há promessa de deduplicação; o cache nunca cresce sem limite.
+- **Situação:** implementado em T004; defaults revisáveis por flag, não requisito docente.
+
 ## Recomendação de revisão pela equipe
 
 Antes de Codex finalizar `T016–T019`, aprovar explicitamente **D02 e D03**. As demais decisões são esclarecimentos que podem ser implementados enquanto a equipe testa. Se professor solicitar uma garantia incompatível com UDP + dados descartáveis, registrar a alteração em uma nova versão da spec e da constituição antes de mexer no código.

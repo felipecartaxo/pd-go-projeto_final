@@ -25,6 +25,11 @@ type Config struct {
 	OutputQueueCapacity  int
 	ControlRetryInterval time.Duration
 	ControlMaxAttempts   int
+	ControlCacheTTL      time.Duration
+	ControlCacheCapacity int
+
+	// now is injectable by package tests; production uses time.Now.
+	now func() time.Time
 }
 
 // DefaultConfig supplies local-only defaults. They are implementation defaults, not
@@ -42,6 +47,8 @@ func DefaultConfig(id int) Config {
 		OutputQueueCapacity:  64,
 		ControlRetryInterval: 300 * time.Millisecond,
 		ControlMaxAttempts:   3,
+		ControlCacheTTL:      20 * time.Second,
+		ControlCacheCapacity: 1024,
 	}
 	switch id {
 	case 1:
@@ -71,6 +78,8 @@ func ParseConfig(args []string) (Config, error) {
 	outputQueue := fs.Int("output-queue-capacity", 0, "per-subscriber output queue capacity")
 	retryInterval := fs.Duration("control-retry-interval", 0, "control retry interval")
 	maxAttempts := fs.Int("control-max-attempts", 0, "total control send attempts")
+	cacheTTL := fs.Duration("control-cache-ttl", 0, "idempotent control-reply cache TTL")
+	cacheCapacity := fs.Int("control-cache-capacity", 0, "maximum cached idempotent control replies")
 	if err := fs.Parse(args); err != nil {
 		return Config{}, err
 	}
@@ -113,6 +122,12 @@ func ParseConfig(args []string) (Config, error) {
 	if visited["control-max-attempts"] {
 		config.ControlMaxAttempts = *maxAttempts
 	}
+	if visited["control-cache-ttl"] {
+		config.ControlCacheTTL = *cacheTTL
+	}
+	if visited["control-cache-capacity"] {
+		config.ControlCacheCapacity = *cacheCapacity
+	}
 	if err := config.Validate(); err != nil {
 		return Config{}, err
 	}
@@ -133,10 +148,10 @@ func (c Config) Validate() error {
 	if c.MaxDatagramBytes != protocol.MaxDatagramSize {
 		return fmt.Errorf("max datagram bytes must be %d for protocol v1", protocol.MaxDatagramSize)
 	}
-	if c.SessionTTL <= 0 || c.HeartbeatInterval <= 0 || c.HeartbeatTimeout <= 0 || c.ControlRetryInterval <= 0 {
+	if c.SessionTTL <= 0 || c.HeartbeatInterval <= 0 || c.HeartbeatTimeout <= 0 || c.ControlRetryInterval <= 0 || c.ControlCacheTTL <= 0 {
 		return errors.New("timeouts and intervals must be positive")
 	}
-	if c.RateLimitPerSecond <= 0 || c.RateBurst <= 0 || c.InputQueueCapacity <= 0 || c.OutputQueueCapacity <= 0 || c.ControlMaxAttempts <= 0 {
+	if c.RateLimitPerSecond <= 0 || c.RateBurst <= 0 || c.InputQueueCapacity <= 0 || c.OutputQueueCapacity <= 0 || c.ControlMaxAttempts <= 0 || c.ControlCacheCapacity <= 0 {
 		return errors.New("rates, capacities and control attempts must be positive")
 	}
 	return nil

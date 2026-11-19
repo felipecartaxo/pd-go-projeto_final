@@ -1,6 +1,6 @@
 # Biblioteca Go do middleware — documentação prevista
 
-> **Estado da implementação:** o módulo e o pacote `pkg/pubsub` existem desde T001, mas a biblioteca cliente será implementada em T021–T025. A API abaixo é planejada e seus exemplos ainda não compilam; ela não deve ser apresentada como uso disponível.
+> **Estado da implementação:** o módulo e o pacote `pkg/pubsub` existem desde T001. O erro público `pubsub.ErrInconclusive` já representa timeout de controle limitado (T004), mas a biblioteca cliente será implementada em T021–T025. A API abaixo é planejada e seus exemplos ainda não compilam; ela não deve ser apresentada como uso disponível.
 
 > **Status:** contrato de documentação para a API que será entregue. A API pública proposta está em `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; este arquivo será ajustado para que os exemplos compilem após sua implementação.
 
@@ -18,7 +18,7 @@ O módulo Go criado em T001 é `github.com/Neraky/pd-go-cenario-2-implementacao`
 import "github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
 ```
 
-Não publicar instruções de `go get` inexistentes. O pacote ainda não oferece `Client` ou os demais tipos públicos.
+Não publicar instruções de `go get` inexistentes. O pacote ainda não oferece `Client` ou os demais tipos públicos; nesta etapa ele expõe apenas `ErrInconclusive` para a futura API de controle.
 
 ## Uso esperado
 
