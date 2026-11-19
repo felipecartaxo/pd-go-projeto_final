@@ -17,9 +17,14 @@ func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {
 	firstConfig := broker.DefaultConfig(1)
 	firstConfig.ListenAddress, firstConfig.PeerAddress = firstAddr, secondAddr
 	firstConfig.ControlRetryInterval = 15 * time.Millisecond
+	// This integration test uses raw UDP clients rather than the library, so
+	// they do not send HEARTBEATs. Keep their test sessions alive longer than
+	// the bounded catalog and interest convergence windows below.
+	firstConfig.SessionTTL = 15 * time.Second
 	secondConfig := broker.DefaultConfig(2)
 	secondConfig.ListenAddress, secondConfig.PeerAddress = secondAddr, firstAddr
 	secondConfig.ControlRetryInterval = 15 * time.Millisecond
+	secondConfig.SessionTTL = 15 * time.Second
 	first, err := broker.NewServer(firstConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -68,6 +73,11 @@ func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
+	// Catalog convergence may consume almost all of its own timeout on a busy
+	// machine. Interest propagation and the data-plane assertion need an
+	// independent bounded window; otherwise this test can fail before it sends
+	// a meaningful publish attempt.
+	deliveryDeadline := time.Now().Add(5 * time.Second)
 	if err := subscriber.SetReadDeadline(time.Now().Add(2 * time.Second)); err != nil {
 		t.Fatal(err)
 	}
@@ -94,8 +104,8 @@ func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {
 				return
 			}
 		}
-		if time.Now().After(deadline) {
-			t.Fatal("B1 did not forward to B2 after interest convergence")
+		if time.Now().After(deliveryDeadline) {
+			t.Fatalf("B1 did not forward to B2 after interest convergence; B1 metrics=%+v B2 metrics=%+v", first.Metrics(), second.Metrics())
 		}
 	}
 }
