@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -128,4 +129,28 @@ func TestEncodedEnvelopeTravelsAsOneUDPDatagram(t *testing.T) {
 	if got.MessageID != want.MessageID || !bytes.Equal(got.Payload, want.Payload) {
 		t.Fatalf("received envelope = %#v, want %#v", got, want)
 	}
+}
+
+func TestDecodeSupportsConcurrentCallers(t *testing.T) {
+	data, err := Encode(validPublish([]byte(`{"bid":1}`)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	const workers = 16
+	const iterations = 200
+	var group sync.WaitGroup
+	group.Add(workers)
+	for range workers {
+		go func() {
+			defer group.Done()
+			for range iterations {
+				envelope, decodeErr := Decode(data)
+				if decodeErr != nil || envelope.MessageID != "message-1" {
+					t.Errorf("Decode() = %#v, %v", envelope, decodeErr)
+					return
+				}
+			}
+		}()
+	}
+	group.Wait()
 }
