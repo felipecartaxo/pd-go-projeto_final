@@ -2,6 +2,8 @@
 
 ## O que medir
 
+**Implementado em T008–T012:** `broker.Server.Metrics()` retorna um snapshot local de `PublishedReceived`, `PublishedAccepted`, `RateLimited`, `InputDropped`, `OutputDropped`, `NoSubscribers`, `NoSubscriberRetries`, `NoSubscriberTimeouts`, `DeliverAttempts` e `DeliveryWriteFailures`. São contadores de processamento/tentativa; ainda não há exportador CSV/JSON (T028) nem confirmação de recebimento por cliente.
+
 | Métrica | Definição | Unidade / origem |
 |---|---|---|
 | `publish_offered_total` | Chamadas de `Publish` iniciadas pela carga | mensagens/cliente |

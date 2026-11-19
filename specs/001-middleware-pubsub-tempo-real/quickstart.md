@@ -1,6 +1,6 @@
 # Quickstart planejado — execução local e testes
 
-> **Estado da implementação:** T001–T007 fornecem o módulo Go, o processo UDP de broker, o protocolo JSON/UDP v1 e controle local de sessão/catálogo/inscrição. Apenas a seção 1 é executável por CLI nesta iteração; os cenários Pub/Sub e a biblioteca cliente das seções seguintes continuam planejados.
+> **Estado da implementação:** T001–T012 fornecem o broker UDP com controle, rate limit, filas e Pub/Sub local best effort. Apenas a seção 1 é executável por CLI nesta iteração, pois `cmd/demo` e a biblioteca cliente continuam planejados.
 
 **ATENÇÃO:** as seções 2–7 continuam o **contrato de usabilidade da Etapa 2**. Seus comandos só serão executáveis após as tarefas correspondentes; atualizar flags conforme necessário, sem desalinhar os exemplos.
 
@@ -24,7 +24,7 @@ Terminal 2:
 go run ./cmd/broker -id=2 -listen=127.0.0.1:9002 -peer=127.0.0.1:9001
 ```
 
-Ambos devem indicar id, endereço e peer e encerrar graciosamente com `Ctrl+C`. Nesta etapa o listener processa operações UDP de controle locais, mas `cmd/demo` ainda não as envia e não há publicação/entrega de dados.
+Ambos devem indicar id, endereço e peer e encerrar graciosamente com `Ctrl+C`. O listener já processa controle e Pub/Sub local por UDP, mas `cmd/demo` ainda não envia esses datagramas; as seções seguintes permanecem roteiro planejado.
 
 ## 2. Criar tópico e assinar no outro broker
 

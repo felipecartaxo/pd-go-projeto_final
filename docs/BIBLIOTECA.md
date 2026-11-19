@@ -1,6 +1,6 @@
 # Biblioteca Go do middleware — documentação prevista
 
-> **Estado da implementação:** o módulo e o pacote `pkg/pubsub` existem desde T001. O erro público `pubsub.ErrInconclusive` já representa timeout de controle limitado (T004), mas a biblioteca cliente será implementada em T021–T025. A API abaixo é planejada e seus exemplos ainda não compilam; ela não deve ser apresentada como uso disponível.
+> **Estado da implementação:** o broker já suporta Pub/Sub local best effort (T008–T012) e `pubsub.ErrInconclusive` representa timeout de controle limitado (T004), mas a biblioteca cliente será implementada em T021–T025. A API abaixo é planejada e seus exemplos ainda não compilam; ela não deve ser apresentada como uso disponível.
 
 > **Status:** contrato de documentação para a API que será entregue. A API pública proposta está em `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; este arquivo será ajustado para que os exemplos compilem após sua implementação.
 

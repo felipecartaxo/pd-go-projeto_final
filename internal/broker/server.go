@@ -43,8 +43,8 @@ func (s *Server) Addr() *net.UDPAddr {
 	return s.conn.LocalAddr().(*net.UDPAddr)
 }
 
-// Serve validates and handles the local control plane until context cancellation or Close.
-// Data-plane operations remain deliberately unimplemented.
+// Serve validates, schedules, and sends local protocol traffic until context cancellation or Close.
+// It has one receive/dispatch loop; no goroutine is created for a publication or delivery.
 func (s *Server) Serve(ctx context.Context) error {
 	stopped := make(chan struct{})
 	go func() {
@@ -60,7 +60,7 @@ func (s *Server) Serve(ctx context.Context) error {
 	// silently accepting a truncated 1200-byte prefix.
 	buffer := make([]byte, s.config.MaxDatagramBytes+1)
 	for {
-		if err := s.conn.SetReadDeadline(time.Now().Add(s.sessionSweepInterval())); err != nil {
+		if err := s.conn.SetReadDeadline(time.Now().Add(s.readInterval())); err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				return nil
 			}
@@ -73,6 +73,7 @@ func (s *Server) Serve(ctx context.Context) error {
 			}
 			if networkErr, ok := err.(net.Error); ok && networkErr.Timeout() {
 				s.expireSessions()
+				s.writeOutbounds(s.collectOutbounds(s.state.now()))
 				continue
 			}
 			return err
@@ -81,16 +82,11 @@ func (s *Server) Serve(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
-		response, target, ok := s.handle(env, source)
-		if !ok {
-			continue
+		response, target, hasResponse := s.handle(env, source)
+		if hasResponse {
+			s.writeOutbounds([]outbound{{address: target, envelope: response}})
 		}
-		encoded, err := protocol.Encode(response)
-		if err != nil {
-			continue
-		}
-		// A successful UDP write is only a local send attempt; it is not delivery.
-		_, _ = s.conn.WriteToUDP(encoded, target)
+		s.writeOutbounds(s.collectOutbounds(s.state.now()))
 	}
 }
 
@@ -108,14 +104,29 @@ func (s *Server) sessionSweepInterval() time.Duration {
 	return interval
 }
 
+func (s *Server) readInterval() time.Duration {
+	interval := s.sessionSweepInterval()
+	if s.config.ControlRetryInterval < interval {
+		interval = s.config.ControlRetryInterval
+	}
+	// Queued data is drained promptly after a burst without spinning while idle.
+	s.state.mu.Lock()
+	hasData := len(s.state.publisherRR) > 0
+	s.state.mu.Unlock()
+	if hasData && interval > 5*time.Millisecond {
+		return 5 * time.Millisecond
+	}
+	return interval
+}
+
 func (s *Server) expireSessions() {
 	s.state.mu.Lock()
 	defer s.state.mu.Unlock()
 	s.state.expireSessionsLocked(s.state.now())
 }
 
-// handle applies only T004-T007 control-plane operations. It does not publish,
-// enqueue, forward, or deliver data messages.
+// handle updates one client-originated request. Data delivery is later scheduled by
+// collectOutbounds so no UDP I/O is performed while the state lock is held.
 func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.Envelope, *net.UDPAddr, bool) {
 	s.state.mu.Lock()
 	defer s.state.mu.Unlock()
@@ -140,6 +151,14 @@ func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.En
 		return errorReply(env, protocol.CodeNotRegistered), cloneUDPAddr(source), true
 	}
 	target := s.state.replyAddressLocked(env.ClientID, source)
+	if env.Type == protocol.TypePublish {
+		response, hasResponse := s.state.publishLocked(env, now)
+		return response, target, hasResponse
+	}
+	if env.Type == protocol.TypeACK {
+		s.state.acknowledgeNoticeLocked(env.ClientID, env.RequestID)
+		return protocol.Envelope{}, nil, false
+	}
 	if response, ok := s.state.replies.Get(key); ok {
 		return response, target, true
 	}
@@ -163,4 +182,26 @@ func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.En
 	}
 	s.state.replies.Put(key, response)
 	return response, target, true
+}
+
+func (s *Server) collectOutbounds(now time.Time) []outbound {
+	s.state.mu.Lock()
+	defer s.state.mu.Unlock()
+	s.state.expireSessionsLocked(now)
+	return s.state.collectOutboundsLocked(now)
+}
+
+func (s *Server) writeOutbounds(outbounds []outbound) {
+	for _, next := range outbounds {
+		encoded, err := protocol.Encode(next.envelope)
+		if err != nil {
+			continue
+		}
+		// A successful UDP write is only a local send attempt, not subscriber receipt.
+		if _, err := s.conn.WriteToUDP(encoded, next.address); err != nil && next.envelope.Type == protocol.TypeDeliver {
+			s.state.mu.Lock()
+			s.state.metrics.DeliveryWriteFailures++
+			s.state.mu.Unlock()
+		}
+	}
 }

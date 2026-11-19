@@ -77,7 +77,7 @@
 ## D11 — Janela limitada de idempotência de controle
 
 - **Contrato:** controle deve reutilizar `request_id`, sofrer retry finito e ser idempotente dentro de uma janela delimitada, sem prometer execução única para falhas arbitrárias.
-- **Escolha de implementação:** o broker guarda a resposta por chave (`type`, origem UDP, `request_id`) em cache limitado e configurável; os defaults são TTL de 20 s e capacidade de 1024 entradas, já propostos no modelo de dados. O retry que esgota tentativas retorna `ErrInconclusive` localmente.
+- **Escolha de implementação:** o broker guarda a resposta por chave (`type`, origem UDP, `request_id`) em cache limitado e configurável; os defaults são TTL de 20 s e capacidade de 1024 entradas, já propostos no modelo de dados. A mesma capacidade limita `NO_SUBSCRIBERS` pendentes, evitando fila de controle ilimitada. O retry que esgota tentativas retorna `ErrInconclusive` localmente.
 - **Impacto:** uma repetição dentro da janela devolve a resposta original sem reaplicar a mutação. Após expiração/evicção, não há promessa de deduplicação; o cache nunca cresce sem limite.
 - **Situação:** implementado em T004; defaults revisáveis por flag, não requisito docente.
 
