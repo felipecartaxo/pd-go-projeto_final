@@ -1,3 +1,3 @@
-module github.com/Neraky/pd-go-cenario-2-implementacao
+module github.com/felipecartaxo/pd-go-projeto_final
 
 go 1.26

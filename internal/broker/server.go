@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/control"
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/protocol"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/control"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/protocol"
 )
 
 // Server owns one UDP listener and can be shut down through its context or Close.

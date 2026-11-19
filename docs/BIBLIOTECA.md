@@ -12,10 +12,10 @@ Ela **não** promete entrega de todas as publicações, ordenação, deduplicaç
 
 ## Instalação
 
-O módulo Go criado em T001 é `github.com/Neraky/pd-go-cenario-2-implementacao`. Quando a API for implementada, o import será:
+O módulo Go é `github.com/felipecartaxo/pd-go-projeto_final`. O import é:
 
 ```go
-import "github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
+import "github.com/felipecartaxo/pd-go-projeto_final/pkg/pubsub"
 ```
 
 O pacote expõe `Client`, `Config`, `Message`, `Event`, erros e os métodos documentados neste guia.
@@ -32,7 +32,7 @@ import (
     "log"
     "time"
 
-    "github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
+    "github.com/felipecartaxo/pd-go-projeto_final/pkg/pubsub"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
+	"github.com/felipecartaxo/pd-go-projeto_final/pkg/pubsub"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/broker"
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/protocol"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/broker"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/protocol"
 )
 
 func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {

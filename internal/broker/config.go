@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/protocol"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/protocol"
 )
 
 // Config contains the fixed-peer addresses and bounded process settings for one broker.

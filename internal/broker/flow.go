@@ -4,7 +4,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/protocol"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/protocol"
 )
 
 // Metrics records local processing and send attempts; it never claims receipt by a subscriber.

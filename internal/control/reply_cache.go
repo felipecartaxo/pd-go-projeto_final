@@ -3,7 +3,7 @@ package control
 import (
 	"time"
 
-	"github.com/Neraky/pd-go-cenario-2-implementacao/internal/protocol"
+	"github.com/felipecartaxo/pd-go-projeto_final/internal/protocol"
 )
 
 // ReplyKey identifies one control operation in the scope required by the wire contract.

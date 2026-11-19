@@ -40,7 +40,7 @@
 
 ## Base implementada (T001–T030)
 
-- Módulo: `github.com/Neraky/pd-go-cenario-2-implementacao`; versão declarada: Go 1.26.
+- Módulo: `github.com/felipecartaxo/pd-go-projeto_final`; versão declarada: Go 1.26.
 - `internal/protocol` codifica, decodifica e valida envelopes JSON v1 em um único datagrama de no máximo **1200 bytes**. `PUBLISH` e `DELIVER` são dados best effort; esta base não adiciona ACK ou retry para eles.
 - `cmd/broker` processa `REGISTER`, `HEARTBEAT`, catálogo e inscrições locais, além de `PUBLISH`/`DELIVER` local. `PUBLISH` não recebe ACK positivo; `DELIVER` é uma tentativa UDP única, sem ACK/retry.
 - Cada publicador tem token bucket configurável; cada publicador e assinante tem fila limitada com drop-oldest. O dispatcher round-robin e as filas individuais evitam que uma rajada ou assinante lento bloqueie os demais.
