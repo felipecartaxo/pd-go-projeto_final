@@ -81,6 +81,41 @@
 - **Impacto:** uma repetição dentro da janela devolve a resposta original sem reaplicar a mutação. Após expiração/evicção, não há promessa de deduplicação; o cache nunca cresce sem limite.
 - **Situação:** implementado em T004; defaults revisáveis por flag, não requisito docente.
 
+## D12 — Snapshot de B2 não pode apagar catálogo já confirmado em B1
+
+- **Contexto:** durante a convergência inicial, B2 pode emitir um `PEER_SYNC`
+  de catálogo vazio antes de receber uma criação recém-confirmada por B1.
+- **Escolha de implementação:** B1 aceita snapshot de catálogo de B2 somente
+  quando ainda não possui revisão nem tópicos locais. Assim, um B1 recém-
+  reiniciado e vazio pode recuperar o catálogo sobrevivente de B2 (D02), mas
+  um snapshot atrasado ou vazio não apaga uma mutação já confirmada pelo
+  coordenador.
+- **Impacto:** preserva a autoridade de B1 sem persistência, mantendo a
+  recuperação proposta em D02. Não altera o protocolo nem acrescenta broker.
+- **Verificação:** `TestBrokerOneDoesNotReplaceEstablishedCatalogWithEmptyPeerSnapshot`
+  e `TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest`.
+- **Situação:** implementado após falha intermitente identificada durante a
+  execução do roteiro de testes.
+
+## D13 — Perfil de carga reprodutível no runtime Windows observado
+
+- **Contexto:** o fan-out com 100 clientes simultâneos reproduziu uma falha
+  fatal no runtime de rede do Go 1.26.1 para Windows (`internal/poll` e
+  `sync.Pool`), fora do código do middleware. A mesma execução com 20
+  assinantes completou e gerou CSV.
+- **Escolha de execução:** o roteiro padrão usa 20 assinantes para fan-out e
+  fairness e inicia o `loadgen` com `-gomaxprocs 1`, mantendo clientes e
+  goroutines concorrentes, mas sem paralelismo de threads do runtime afetado.
+  `-Stress` preserva a opção de executar 100 assinantes no fan-out e 30 no
+  fairness em um ambiente que suporte essa carga.
+- **Impacto:** não altera protocolo, biblioteca, filas ou semântica de
+  entrega. Resultados de estresse devem registrar versão do Go, SO e hardware;
+  uma falha do runtime deve ser reportada como limitação do ambiente, não como
+  sucesso de throughput.
+- **Verificação:** `TestDecodeSupportsConcurrentCallers`, cargas padrão do
+  roteiro e o CSV gerado em cada execução concluída.
+- **Situação:** implementado no roteiro de testes.
+
 ## Recomendação de revisão pela equipe
 
 Antes de Codex finalizar `T016–T019`, aprovar explicitamente **D02 e D03**. As demais decisões são esclarecimentos que podem ser implementados enquanto a equipe testa. Se professor solicitar uma garantia incompatível com UDP + dados descartáveis, registrar a alteração em uma nova versão da spec e da constituição antes de mexer no código.

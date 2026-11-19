@@ -16,11 +16,13 @@ Documentos de origem:
 | Etapa 1 §2.1 item 6: interesse e encaminhamento | RF07–RF08 | T014–T015 | `internal/broker/peer_test.go`; `integration/cross_broker_test.go`; CT10–CT12 |
 | Etapa 1 §2.1 item 7: recuperação de inscrições | RF12, US05 | T024–T025 | CT14, W04 |
 | Etapa 1 §2.1 item 8: B1 catálogo, B2 cópia | RF02, RF09, US01 | T006, T016–T019 | `internal/broker/peer_test.go`; CT02, CT13, CT15–CT17 |
+| D12: B1 preserva catálogo confirmado contra snapshot atrasado de B2 | RF02, RF09, US01 | T016–T020, T029 | `TestBrokerOneDoesNotReplaceEstablishedCatalogWithEmptyPeerSnapshot`; `TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest` |
+| D13: estabilidade de parsing JSON sob leitores concorrentes | RF14, RNF05 | T003, T025, T029 | `TestDecodeSupportsConcurrentCallers`; cenários `loadgen` |
 | Etapa 1 §3.2: JSON, ACKs e mensagens | RF05, RF06, RF13–RF14 | T003–T004, T011, T016–T018 | `internal/control/retry_test.go`; `internal/broker/data_test.go`; CT05–CT06, CT17–CT19 |
 | Etapa 1 §3.3: PEER_SYNC, TTL, drop-oldest | RF01, RF09–RF13 | T005, T008–T009, T018–T019 | CT01, CT08, CT15–CT17 |
 | Enunciado item 3: tópicos, inscrições, descarte, buffer, transparência | RF02–RF05, RF11–RF12 | T006–T011, T021–T024 | CT02–CT09, CT14 |
 | Enunciado item 4: clientes/medições | RF15–RF16 | T027–T029 | W01–W04 |
-| Enunciado item 5.3: código e documentação | RF15–RF16, RNF06–RNF07 | T001–T002, T026–T030 | quickstart + checklist de entrega |
+| Enunciado item 5.3: código e documentação | RF15–RF16, RNF06–RNF07 | T001–T002, T026–T030 | `docs/GUIA_EXECUCAO_TESTES.md` + `scripts/Executar-Testes.ps1` + quickstart |
 
 ## Pontos além do texto literal (propostas, não fatos da fonte)
 
