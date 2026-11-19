@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -33,7 +34,14 @@ func main() {
 	brokers := flag.String("brokers", "127.0.0.1:9001,127.0.0.1:9002", "B1,B2")
 	output := flag.String("output", "results.json", ".json or .csv")
 	topic := flag.String("topic", "loadgen/events", "topic")
+	gomaxprocs := flag.Int("gomaxprocs", 0, "maximum Go worker threads; 0 keeps the runtime default")
 	flag.Parse()
+	if *gomaxprocs < 0 {
+		log.Fatal("-gomaxprocs must be zero or positive")
+	}
+	if *gomaxprocs > 0 {
+		runtime.GOMAXPROCS(*gomaxprocs)
+	}
 	parts := strings.Split(*brokers, ",")
 	if len(parts) != 2 {
 		log.Fatal("-brokers must be B1,B2")
