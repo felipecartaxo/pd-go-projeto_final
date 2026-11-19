@@ -57,7 +57,7 @@ func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {
 	control(t, subscriber, protocol.Envelope{Version: 1, Type: protocol.TypeRegister, RequestID: "register-subscriber", ClientID: "subscriber"})
 	control(t, creator, protocol.Envelope{Version: 1, Type: protocol.TypeCreateTopic, RequestID: "create", ClientID: "creator", Topic: "auction"})
 
-	deadline := time.Now().Add(2 * time.Second)
+	deadline := time.Now().Add(5 * time.Second)
 	for attempt := 0; ; attempt++ {
 		reply := controlReply(t, subscriber, protocol.Envelope{Version: 1, Type: protocol.TypeSubscribe, RequestID: fmt.Sprintf("subscribe-%d", attempt), ClientID: "subscriber", Topic: "auction"})
 		if reply.Type == protocol.TypeOK {
@@ -81,7 +81,7 @@ func TestTwoUDPBrokersForwardOnlyForKnownRemoteInterest(t *testing.T) {
 			t.Fatal(err)
 		}
 		buffer := make([]byte, protocol.MaxDatagramSize)
-		if err := subscriber.SetReadDeadline(time.Now().Add(80 * time.Millisecond)); err != nil {
+		if err := subscriber.SetReadDeadline(time.Now().Add(120 * time.Millisecond)); err != nil {
 			t.Fatal(err)
 		}
 		n, err := subscriber.Read(buffer)

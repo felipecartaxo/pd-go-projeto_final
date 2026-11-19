@@ -1,8 +1,8 @@
 # Middleware Pub/Sub para Interação ao Vivo — SDD (Etapa 2)
 
-> **Estado da implementação:** T001–T020 concluídas: Pub/Sub UDP local e entre dois brokers fixos, com controle, limites e sincronização volátil. A biblioteca cliente ainda pertence às tarefas posteriores.
+> **Estado da implementação:** T001–T027 concluídas: brokers UDP, biblioteca cliente com failover e CLI de demonstração. O gerador de carga permanece para T028.
 
-> **Status:** implementação incremental; T001–T020 estão concluídas nesta revisão.
+> **Status:** implementação incremental; T001–T027 estão concluídas nesta revisão.
 > **Origem:** documento aprovado da Etapa 1 (10 páginas) e enunciado do projeto (5 páginas).
 > **Objetivo:** código Go no repositório, biblioteca pública utilizável, duas instâncias UDP, CLI de demonstração e testes/medições reproduzíveis.
 

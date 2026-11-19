@@ -1,6 +1,6 @@
 # Quickstart planejado — execução local e testes
 
-> **Estado da implementação:** T001–T020 fornecem brokers UDP fixos com Pub/Sub local/interbroker, controle e recuperação volátil. Apenas a seção 1 é executável por CLI nesta iteração, pois `cmd/demo` e a biblioteca cliente continuam planejados.
+> **Estado da implementação:** T001–T027 fornecem brokers UDP e a biblioteca/CLI de demonstração. As seções 1–5 usam comandos reais; `loadgen` permanece planejado.
 
 **ATENÇÃO:** as seções 2–7 continuam o **contrato de usabilidade da Etapa 2**. Seus comandos só serão executáveis após as tarefas correspondentes; atualizar flags conforme necessário, sem desalinhar os exemplos.
 
@@ -24,7 +24,7 @@ Terminal 2:
 go run ./cmd/broker -id=2 -listen=127.0.0.1:9002 -peer=127.0.0.1:9001
 ```
 
-Ambos devem indicar id, endereço e peer e encerrar graciosamente com `Ctrl+C`. Eles trocam heartbeat, interesses e catálogo por UDP, além de processar Pub/Sub local/interbroker; `cmd/demo` ainda não envia esses datagramas, então as seções seguintes permanecem roteiro planejado.
+Ambos devem indicar id, endereço e peer e encerrar graciosamente com `Ctrl+C`. Eles trocam heartbeat, interesses e catálogo por UDP, além de processar Pub/Sub local/interbroker.
 
 ## 2. Criar tópico e assinar no outro broker
 

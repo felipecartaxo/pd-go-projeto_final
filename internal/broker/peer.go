@@ -297,7 +297,11 @@ func (p *peerState) receiveSnapshotChunkLocked(state *brokerState, env protocol.
 				interests[item.Topic] = remoteInterest{present: item.Present, epoch: item.Epoch, version: item.Version}
 			}
 		}
-		p.remoteInterest = interests
+		for topic, incoming := range interests {
+			if current, exists := p.remoteInterest[topic]; !exists || incoming.epoch > current.epoch || (incoming.epoch == current.epoch && incoming.version >= current.version) {
+				p.remoteInterest[topic] = incoming
+			}
+		}
 		delete(p.snapshots, env.SyncID)
 		p.interestRequested = false
 		return true, ""
