@@ -101,6 +101,26 @@ func TestCatalogUpdateRejectsGapAndIgnoresDuplicate(t *testing.T) {
 	}
 }
 
+func TestBrokerOneDoesNotReplaceEstablishedCatalogWithEmptyPeerSnapshot(t *testing.T) {
+	now := time.Unix(100, 0)
+	first, second := newPeerTestPair(t, &now)
+	creator := testAddr(10001)
+	registerControl(t, first, creator, "creator")
+	createTopic(t, first, creator, "creator", "auction")
+
+	// A B2 that synchronized before the create can legitimately hold an empty
+	// snapshot. It must not overwrite B1's established authoritative catalog.
+	empty := peerChunk(t, "empty-catalog", 2, "snapshot", 0, 1, nil)
+	first.handlePeer(empty, second.Addr())
+
+	first.state.mu.Lock()
+	_, exists := first.state.topics["auction"]
+	first.state.mu.Unlock()
+	if !exists {
+		t.Fatal("B1 replaced its established catalog with B2's empty snapshot")
+	}
+}
+
 func TestPeerSyncAppliesCatalogOnlyAfterAllReorderedChunks(t *testing.T) {
 	now := time.Unix(100, 0)
 	first, second := newPeerTestPair(t, &now)

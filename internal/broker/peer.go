@@ -310,6 +310,15 @@ func (p *peerState) receiveSnapshotChunkLocked(state *brokerState, env protocol.
 		delete(p.snapshots, env.SyncID)
 		return false, protocol.CodeSyncRequired
 	}
+	// B1 is authoritative after it has committed any catalog mutation. A
+	// snapshot from B2 can restore a freshly restarted B1 only while B1 has no
+	// catalog revision of its own; otherwise an older (including empty) B2
+	// snapshot could erase a topic created by B1 during peer convergence.
+	if state.brokerID == 1 && (p.catalogRevision > 0 || len(state.topics) > 0) {
+		delete(p.snapshots, env.SyncID)
+		p.syncRequested = false
+		return false, ""
+	}
 	topics := make(map[string]struct{})
 	for part := uint32(0); part < snapshot.total; part++ {
 		var names []string
