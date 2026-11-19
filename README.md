@@ -1,8 +1,8 @@
 # Middleware Pub/Sub para Interação ao Vivo — SDD (Etapa 2)
 
-> **Estado da implementação:** T001–T027 concluídas: brokers UDP, biblioteca cliente com failover e CLI de demonstração. O gerador de carga permanece para T028.
+> **Estado da implementação:** T001–T030 concluídas: brokers UDP, biblioteca, demonstração e gerador de carga com exportação CSV/JSON.
 
-> **Status:** implementação incremental; T001–T027 estão concluídas nesta revisão.
+> **Status:** implementação incremental; T001–T030 estão concluídas nesta revisão.
 > **Origem:** documento aprovado da Etapa 1 (10 páginas) e enunciado do projeto (5 páginas).
 > **Objetivo:** código Go no repositório, biblioteca pública utilizável, duas instâncias UDP, CLI de demonstração e testes/medições reproduzíveis.
 
@@ -38,7 +38,7 @@
 
 **Não é necessário instalar GitHub Spec Kit:** esta estrutura é **inspirada** nas convenções do Spec Kit, mas pode ser lida diretamente pelo Codex com `AGENTS.md`. Se a equipe decidir instalar a CLI oficial do Spec Kit, inicialize a integração separadamente e **não sobrescreva** estas especificações aprovadas.
 
-## Base implementada (T001–T020)
+## Base implementada (T001–T030)
 
 - Módulo: `github.com/Neraky/pd-go-cenario-2-implementacao`; versão declarada: Go 1.26.
 - `internal/protocol` codifica, decodifica e valida envelopes JSON v1 em um único datagrama de no máximo **1200 bytes**. `PUBLISH` e `DELIVER` são dados best effort; esta base não adiciona ACK ou retry para eles.
@@ -47,7 +47,8 @@
 - Sem assinantes locais conhecidos, o broker envia `NO_SUBSCRIBERS` correlacionado e o repete no limite configurado até `ACK`; `RATE_LIMITED` é uma notificação de tentativa única. `Server.Metrics()` expõe contadores de aceitação, descarte e tentativas.
 - Os dois brokers trocam `PEER_HEARTBEAT`, interesses versionados, atualizações de catálogo e snapshots `PEER_SYNC` limitados. Publicação só é encaminhada ao peer vivo com interesse conhecido e nunca retorna ao broker de origem.
 - B1 permanece o único coordenador. B2 encaminha create/delete quando B1 está vivo; se não estiver, responde `COORDINATOR_UNAVAILABLE` e continua atendendo publish/subscribe para tópicos conhecidos. `OK` de mutação em B1 é commit local, não confirmação imediata da réplica.
-- Ao detectar peer ativo, cada broker pede snapshots de catálogo/interesses. Isso recupera B1 vazio a partir de B2 sobrevivente, conforme D02; sem persistência, reinício simultâneo começa vazio. A biblioteca cliente/CLI funcional ainda não existe.
+- A biblioteca mantém um socket/leitor UDP ativo, correlação de controle e failover com re-registro/reinscrição. Publicações emitidas antes/durante a troca não são repetidas.
+- `cmd/demo` executa create/delete/pub/sub/unsubscribe; `cmd/loadgen` executa fanout, burst, fairness ou failover e grava CSV/JSON. Em failover, interrompa/reinicie B1 externamente; o resultado não afirma perda zero.
 
 Para iniciar os dois listeners locais nesta etapa:
 

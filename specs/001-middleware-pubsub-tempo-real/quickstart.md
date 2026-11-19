@@ -1,6 +1,6 @@
 # Quickstart planejado — execução local e testes
 
-> **Estado da implementação:** T001–T027 fornecem brokers UDP e a biblioteca/CLI de demonstração. As seções 1–5 usam comandos reais; `loadgen` permanece planejado.
+> **Estado da implementação:** T001–T030 fornecem brokers UDP, biblioteca, demo e `loadgen`. Os comandos abaixo são executáveis em localhost com os dois brokers ativos.
 
 **ATENÇÃO:** as seções 2–7 continuam o **contrato de usabilidade da Etapa 2**. Seus comandos só serão executáveis após as tarefas correspondentes; atualizar flags conforme necessário, sem desalinhar os exemplos.
 

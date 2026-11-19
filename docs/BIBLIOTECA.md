@@ -2,7 +2,7 @@
 
 > **Estado da implementação:** `pkg/pubsub` implementa a API descrita abaixo: um leitor UDP por cliente ativo, retry limitado de controle, eventos e failover. `Publish` faz uma única tentativa e não é reenviado no failover.
 
-> **Status:** contrato de documentação para a API que será entregue. A API pública proposta está em `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; este arquivo será ajustado para que os exemplos compilem após sua implementação.
+> **Status:** API pública implementada; exemplos usam o módulo declarado em `go.mod`.
 
 ## Para que serve
 
@@ -18,7 +18,7 @@ O módulo Go criado em T001 é `github.com/Neraky/pd-go-cenario-2-implementacao`
 import "github.com/Neraky/pd-go-cenario-2-implementacao/pkg/pubsub"
 ```
 
-Não publicar instruções de `go get` inexistentes. O pacote ainda não oferece `Client` ou os demais tipos públicos; nesta etapa ele expõe apenas `ErrInconclusive` para a futura API de controle.
+O pacote expõe `Client`, `Config`, `Message`, `Event`, erros e os métodos documentados neste guia.
 
 ## Uso esperado
 

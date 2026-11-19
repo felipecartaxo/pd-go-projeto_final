@@ -2,7 +2,7 @@
 
 ## O que medir
 
-**Implementado em T008–T012:** `broker.Server.Metrics()` retorna um snapshot local de `PublishedReceived`, `PublishedAccepted`, `RateLimited`, `InputDropped`, `OutputDropped`, `NoSubscribers`, `NoSubscriberRetries`, `NoSubscriberTimeouts`, `DeliverAttempts` e `DeliveryWriteFailures`. São contadores de processamento/tentativa; ainda não há exportador CSV/JSON (T028) nem confirmação de recebimento por cliente.
+`broker.Server.Metrics()` retorna contadores de processamento/tentativa. `cmd/loadgen` exporta observações locais em CSV/JSON (`offered`, `sent`, `received`, `rate_limited`); `sent` só significa tentativa UDP local e `received` é observação no assinante, nunca prova de entrega completa.
 
 | Métrica | Definição | Unidade / origem |
 |---|---|---|
