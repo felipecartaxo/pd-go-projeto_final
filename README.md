@@ -23,6 +23,7 @@
 | `specs/001-middleware-pubsub-tempo-real/checklists/requirements.md` | Verificação de completude de especificação e entrega |
 | `docs/DECISOES_E_RISCOS.md` | Lacunas técnicas da Etapa 1 e propostas explícitas, sem mudança silenciosa |
 | `docs/PLANO_DE_TESTES.md` | Casos de teste funcionais e de falha/sobrecarga |
+| `docs/GUIA_EXECUCAO_TESTES.md` | Roteiro executável PowerShell, comandos manuais, evidências e resultados esperados |
 | `docs/METRICAS.md` | Instrumentação e análise dos resultados, já visando a Etapa 3 |
 | `docs/BIBLIOTECA.md` | Guia público planejado para uso da biblioteca |
 | `docs/GUIA_CODEX.md` | Como conduzir o Codex por pequenas entregas orientadas às specs |
@@ -57,7 +58,7 @@ go run ./cmd/broker -id=1
 go run ./cmd/broker -id=2
 ```
 
-Execute os testes com `go test ./...`. Os comandos de demo, carga e os fluxos Pub/Sub descritos neste documento continuam planejados até suas tarefas correspondentes.
+Execute os testes com `go test ./...`. Para a validação completa em Windows/PowerShell, incluindo dois brokers, demo, carga e failover, consulte `docs/GUIA_EXECUCAO_TESTES.md` ou execute `./scripts/Executar-Testes.ps1`.
 
 ## Limites assumidos
 
