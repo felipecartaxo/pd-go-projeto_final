@@ -74,6 +74,7 @@ func (s *Server) Serve(ctx context.Context) error {
 			if networkErr, ok := err.(net.Error); ok && networkErr.Timeout() {
 				s.expireSessions()
 				s.writeOutbounds(s.collectOutbounds(s.state.now()))
+				s.writeOutbounds(s.collectPeerOutbounds(s.state.now()))
 				continue
 			}
 			return err
@@ -82,11 +83,18 @@ func (s *Server) Serve(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
+		if s.isPeer(source) {
+			s.writeOutbounds(s.handlePeer(env, source))
+			s.writeOutbounds(s.collectOutbounds(s.state.now()))
+			s.writeOutbounds(s.collectPeerOutbounds(s.state.now()))
+			continue
+		}
 		response, target, hasResponse := s.handle(env, source)
 		if hasResponse {
 			s.writeOutbounds([]outbound{{address: target, envelope: response}})
 		}
 		s.writeOutbounds(s.collectOutbounds(s.state.now()))
+		s.writeOutbounds(s.collectPeerOutbounds(s.state.now()))
 	}
 }
 
@@ -159,6 +167,17 @@ func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.En
 		s.state.acknowledgeNoticeLocked(env.ClientID, env.RequestID)
 		return protocol.Envelope{}, nil, false
 	}
+	if (env.Type == protocol.TypeCreateTopic || env.Type == protocol.TypeDeleteTopic) && s.state.brokerID == 2 && s.state.peer.alive {
+		action := "create"
+		if env.Type == protocol.TypeDeleteTopic {
+			action = "delete"
+		}
+		internalID := s.state.peer.nextID("topic-request")
+		request := protocol.Envelope{Version: protocol.Version1, Type: protocol.TypeTopicRequest, RequestID: internalID, BrokerID: s.state.brokerID, Action: action, Topic: env.Topic}
+		s.state.peer.clientRequests[internalID] = pendingClientRequest{envelope: env, address: target}
+		s.state.peer.queueControlLocked(s.state, request)
+		return protocol.Envelope{}, nil, false
+	}
 	if response, ok := s.state.replies.Get(key); ok {
 		return response, target, true
 	}
@@ -189,6 +208,111 @@ func (s *Server) collectOutbounds(now time.Time) []outbound {
 	defer s.state.mu.Unlock()
 	s.state.expireSessionsLocked(now)
 	return s.state.collectOutboundsLocked(now)
+}
+
+func (s *Server) collectPeerOutbounds(now time.Time) []outbound {
+	s.state.mu.Lock()
+	defer s.state.mu.Unlock()
+	out := s.state.peer.heartbeatLocked(s.state, now)
+	out = append(out, s.state.peer.collectLocked(s.state, now)...)
+	return out
+}
+
+func (s *Server) isPeer(source *net.UDPAddr) bool {
+	s.state.mu.Lock()
+	defer s.state.mu.Unlock()
+	return sameUDPAddr(s.state.peer.address, source)
+}
+
+func (s *Server) handlePeer(env protocol.Envelope, source *net.UDPAddr) []outbound {
+	s.state.mu.Lock()
+	defer s.state.mu.Unlock()
+	state := s.state
+	peer := state.peer
+	if !sameUDPAddr(peer.address, source) || (env.BrokerID != 1 && env.BrokerID != 2) || env.BrokerID == state.brokerID {
+		return nil
+	}
+	now := state.now()
+	wasAlive := peer.alive
+	peer.alive = true
+	peer.lastSeen = now
+	if !wasAlive {
+		peer.requestCatalogSyncLocked(state)
+	}
+	ack := func(request protocol.Envelope, status string, code protocol.Code) []outbound {
+		response := protocol.Envelope{Version: protocol.Version1, Type: protocol.TypeACK, RequestID: request.RequestID, BrokerID: state.brokerID, Status: status, Code: code}
+		return []outbound{{address: cloneUDPAddr(peer.address), envelope: response}}
+	}
+	switch env.Type {
+	case protocol.TypePeerHeartbeat:
+		if env.Reply != nil && *env.Reply {
+			return nil
+		}
+		reply := true
+		return []outbound{{address: cloneUDPAddr(peer.address), envelope: protocol.Envelope{Version: protocol.Version1, Type: protocol.TypePeerHeartbeat, RequestID: env.RequestID, BrokerID: state.brokerID, Reply: &reply}}}
+	case protocol.TypeACK:
+		pending, exists := peer.pending[env.RequestID]
+		if !exists {
+			return nil
+		}
+		delete(peer.pending, env.RequestID)
+		if client, waiting := peer.clientRequests[env.RequestID]; waiting {
+			delete(peer.clientRequests, env.RequestID)
+			if env.Status == "OK" {
+				return []outbound{{address: client.address, envelope: okReply(client.envelope)}}
+			}
+			return []outbound{{address: client.address, envelope: errorReply(client.envelope, env.Code)}}
+		}
+		_ = pending
+		return nil
+	case protocol.TypeInterestUpdate:
+		peer.applyInterestLocked(env)
+		return ack(env, "OK", "")
+	case protocol.TypeForwardPublication:
+		// A forwarded publication is delivered only to local subscribers and never forwarded again.
+		for subscriberID := range state.subscriptions[env.Topic] {
+			if subscriber, ok := state.sessions[subscriberID]; ok {
+				deliver := protocol.Envelope{Version: protocol.Version1, Type: protocol.TypeDeliver, ClientID: subscriberID, Topic: env.Topic, MessageID: env.MessageID, Payload: env.Payload}
+				if subscriber.output.push(deliver) {
+					state.metrics.OutputDropped++
+				}
+			}
+		}
+		return nil
+	case protocol.TypeTopicRequest:
+		if state.brokerID != 1 {
+			return ack(env, "ERROR", protocol.CodeCoordinatorUnavailable)
+		}
+		request := protocol.Envelope{Version: protocol.Version1, Type: protocol.TypeCreateTopic, RequestID: env.RequestID, ClientID: "peer", Topic: env.Topic}
+		if env.Action == "delete" {
+			request.Type = protocol.TypeDeleteTopic
+		}
+		response := state.createTopicLocked(1, request)
+		if response.Type == protocol.TypeError {
+			return ack(env, "ERROR", response.Code)
+		}
+		return ack(env, "OK", "")
+	case protocol.TypeTopicUpdate:
+		if code := peer.applyTopicUpdateLocked(state, env); code != "" {
+			return ack(env, "ERROR", code)
+		}
+		return ack(env, "OK", "")
+	case protocol.TypePeerSync:
+		if env.Action == "request" && env.Scope == "catalog" {
+			return peer.makeCatalogChunksLocked(state, env)
+		}
+		if env.Action == "request" && env.Scope == "interest" {
+			return peer.makeInterestChunksLocked(state, env)
+		}
+		if env.Action == "chunk" {
+			_, code := peer.receiveSnapshotChunkLocked(state, env, now)
+			if code != "" {
+				return ack(env, "ERROR", code)
+			}
+			return ack(env, "OK", "")
+		}
+	}
+	return nil
 }
 
 func (s *Server) writeOutbounds(outbounds []outbound) {

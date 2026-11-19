@@ -37,6 +37,8 @@ type brokerState struct {
 	retryInterval time.Duration
 	maxAttempts   int
 	pendingCap    int
+	brokerID      int
+	peer          *peerState
 }
 
 func newBrokerState(config Config) *brokerState {
@@ -44,7 +46,7 @@ func newBrokerState(config Config) *brokerState {
 	if now == nil {
 		now = time.Now
 	}
-	return &brokerState{
+	state := &brokerState{
 		now:           now,
 		sessionTTL:    config.SessionTTL,
 		sessions:      make(map[string]*session),
@@ -60,7 +62,10 @@ func newBrokerState(config Config) *brokerState {
 		retryInterval: config.ControlRetryInterval,
 		maxAttempts:   config.ControlMaxAttempts,
 		pendingCap:    config.ControlCacheCapacity,
+		brokerID:      config.ID,
 	}
+	state.peer = newPeerState(config, now)
+	return state
 }
 
 func (s *brokerState) registerLocked(clientID string, address *net.UDPAddr, now time.Time) {
@@ -121,6 +126,8 @@ func (s *brokerState) createTopicLocked(brokerID int, env protocol.Envelope) pro
 		return errorReply(env, protocol.CodeTopicAlreadyExists)
 	}
 	s.topics[env.Topic] = struct{}{}
+	s.peer.catalogRevision++
+	s.peer.queueTopicUpdateLocked(s, "create", env.Topic)
 	return okReply(env)
 }
 
@@ -137,6 +144,8 @@ func (s *brokerState) deleteTopicLocked(brokerID int, env protocol.Envelope) pro
 	s.removeTopicDataLocked(env.Topic)
 	delete(s.subscriptions, env.Topic)
 	delete(s.topics, env.Topic)
+	s.peer.catalogRevision++
+	s.peer.queueTopicUpdateLocked(s, "delete", env.Topic)
 	return okReply(env)
 }
 
@@ -150,11 +159,15 @@ func (s *brokerState) subscribeLocked(env protocol.Envelope) protocol.Envelope {
 	}
 	current.subscriptions[env.Topic] = struct{}{}
 	clients := s.subscriptions[env.Topic]
+	wasEmpty := len(clients) == 0
 	if clients == nil {
 		clients = make(map[string]struct{})
 		s.subscriptions[env.Topic] = clients
 	}
 	clients[env.ClientID] = struct{}{}
+	if wasEmpty {
+		s.peer.queueInterestLocked(s, env.Topic, true)
+	}
 	return okReply(env)
 }
 
@@ -171,6 +184,7 @@ func (s *brokerState) removeSubscriptionLocked(clientID, topic string) {
 		delete(clients, clientID)
 		if len(clients) == 0 {
 			delete(s.subscriptions, topic)
+			s.peer.queueInterestLocked(s, topic, false)
 		}
 	}
 }
@@ -221,7 +235,8 @@ func (s *brokerState) dispatchOneLocked(now time.Time) []outbound {
 		}
 
 		clients := s.subscriptions[publication.Topic]
-		if len(clients) == 0 {
+		remote := s.peer.alive && s.peer.remoteInterest[publication.Topic].present
+		if len(clients) == 0 && !remote {
 			s.metrics.NoSubscribers++
 			return s.scheduleNoSubscribersLocked(publication, now)
 		}
@@ -235,7 +250,7 @@ func (s *brokerState) dispatchOneLocked(now time.Time) []outbound {
 				s.metrics.OutputDropped++
 			}
 		}
-		return nil
+		return s.peer.forwardIfInterestedLocked(s, publication)
 	}
 	return nil
 }
