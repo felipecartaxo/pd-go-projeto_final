@@ -1,8 +1,11 @@
-# Contrato planejado da biblioteca Go (`pkg/pubsub`)
+# Contrato v1 da biblioteca Go (`pkg/pubsub`)
 
-> **Design de API**, não afirmação de que o código já existe. O Codex deve implementar e depois atualizar `docs/BIBLIOTECA.md` com assinaturas e exemplos realmente compiláveis.
+> **Estado da implementação:** a API abaixo está implementada em `pkg/pubsub`.
+> O exemplo de execução manual está em `docs/GUIA_EXECUCAO_TESTES.md`. A
+> validação em máquina limpa e sob o detector de corridas ainda está pendente,
+> conforme o checklist de requisitos.
 
-## 1. Tipos públicos sugeridos
+## 1. Tipos públicos
 
 ```go
 package pubsub
@@ -55,7 +58,8 @@ func (c *Client) Events() <-chan Event
 func (c *Client) Close() error
 ```
 
-As assinaturas são sugestões concretas para guiar implementação; eventuais pequenos ajustes idiomáticos devem ser documentados e refletidos em exemplos/testes. Não trocar a semântica sem registrar decisão.
+As assinaturas constituem o contrato público implementado. Mudanças semânticas
+devem ser registradas e refletidas em exemplos e testes.
 
 ## 2. Contrato de cada método
 
@@ -78,7 +82,7 @@ As assinaturas são sugestões concretas para guiar implementação; eventuais p
 
 Sugestão: `var ErrInconclusive = errors.New(...)` e `errors.Is`, com `ProtocolError` tipado para as rejeições explícitas.
 
-## 4. Exemplo pretendido (a validar quando houver implementação)
+## 4. Exemplo de consumidor
 
 ```go
 cfg := pubsub.Config{
@@ -113,7 +117,7 @@ payload := json.RawMessage(`{"valor":120}`)
 id, err := c.Publish(ctx, "leilao/lances", payload)
 ```
 
-Consulte `docs/BIBLIOTECA.md` após implementar.
+Consulte `docs/BIBLIOTECA.md` para a semântica e as limitações da API.
 
 ## 5. Invariantes/testes de biblioteca
 
@@ -122,4 +126,6 @@ Consulte `docs/BIBLIOTECA.md` após implementar.
 3. Failover transparente não reenviará publicações já emitidas.
 4. `Events()` e canais de tópicos possuem capacidade finita; a biblioteca não deixa o loop UDP bloqueado.
 5. Notificações repetidas `NO_SUBSCRIBERS` são ACKadas. Pode haver mais de uma observação do evento, mas recomendado dedup limitado no lado do cliente para o mesmo `request_id`.
-6. Contexto/close interrompem loops e timeouts; testes concorrentes e `-race` passam.
+6. Contexto/close interrompem loops e timeouts; os testes concorrentes passam.
+   A execução de `go test -race ./...` continua pendente enquanto o ambiente
+   não fornecer um compilador C ao CGO.

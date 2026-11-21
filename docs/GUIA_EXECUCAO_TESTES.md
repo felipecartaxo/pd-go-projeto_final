@@ -5,6 +5,10 @@ os comandos manualmente em terminais PowerShell. O roteiro usa somente Go,
 UDP em localhost e os dois brokers fixos; não exige banco, Docker ou serviços
 externos.
 
+> **Estado de validação:** a suíte `go test ./...` foi aprovada. Ainda falta
+> executar `go test -race ./...` em ambiente com compilador C/CGO e registrar
+> os cenários deste guia em uma máquina limpa.
+
 ## Pré-requisitos
 
 - Windows com PowerShell e Go 1.26 disponíveis no `PATH`;

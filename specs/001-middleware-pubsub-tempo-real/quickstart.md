@@ -1,8 +1,8 @@
-# Quickstart planejado — execução local e testes
+# Quickstart — execução local e testes
 
-> **Estado da implementação:** T001–T030 fornecem brokers UDP, biblioteca, demo e `loadgen`. Os comandos abaixo são executáveis em localhost com os dois brokers ativos.
+> **Estado da implementação:** T001–T030 fornecem brokers UDP, biblioteca, demo e `loadgen`. Os comandos abaixo são executáveis em localhost com os dois brokers ativos. `go test ./...` foi aprovado; a execução com `-race` e a evidência em máquina limpa permanecem pendentes conforme o checklist de requisitos.
 
-**ATENÇÃO:** as seções 2–7 continuam o **contrato de usabilidade da Etapa 2**. Seus comandos só serão executáveis após as tarefas correspondentes; atualizar flags conforme necessário, sem desalinhar os exemplos.
+**ATENÇÃO:** use os comandos como estão documentados. Para o roteiro PowerShell completo, incluindo carga e failover manual, consulte `docs/GUIA_EXECUCAO_TESTES.md`. Não inferir entrega garantida de uma execução local bem-sucedida.
 
 ## Pré-requisitos
 
@@ -77,6 +77,9 @@ go test ./...
 go test -race ./...
 go test ./integration -v
 ```
+
+`go test -race ./...` requer CGO com compilador C. Se o compilador não estiver
+disponível, registre a limitação; não marque o critério como aprovado.
 
 Documentar testes de integração que dependam de portas efêmeras/injeção de falha; **evitar** testes que exigem matar manualmente processos durante CI padrão.
 

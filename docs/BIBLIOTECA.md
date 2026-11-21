@@ -1,4 +1,4 @@
-# Biblioteca Go do middleware — documentação prevista
+# Biblioteca Go do middleware
 
 > **Estado da implementação:** `pkg/pubsub` implementa a API descrita abaixo: um leitor UDP por cliente ativo, retry limitado de controle, eventos e failover. `Publish` faz uma única tentativa e não é reenviado no failover.
 
@@ -60,7 +60,7 @@ func main() {
 
 **Importante:** `Publish` não é prova de recebimento pelos assinantes; observar notificações assíncronas via `Events()` para `NO_SUBSCRIBERS`, `RATE_LIMITED` e erros. O exemplo de consumidor está no contrato `client-api.md`.
 
-## Semântica da API prevista
+## Semântica da API implementada
 
 | Operação | Comportamento |
 |---|---|
@@ -81,10 +81,15 @@ func main() {
 - Um assinante lento pode perder mensagens antigas quando sua fila encher.
 - Para testar, use duas instâncias locais e `cmd/demo`; a integração `cmd/loadgen` mede fan-out, rajadas e fairness.
 
-## Checklist antes de entrega
+## Estado de validação da biblioteca
 
-- [ ] Import correto foi substituído pelo nome do módulo real.
-- [ ] Código de exemplo compila e funciona em dois terminais.
-- [ ] Assinaturas, códigos de erro, flags e defaults batem com o código.
-- [ ] Existe exemplo de consumidor e eventos assíncronos completos/compiláveis.
-- [ ] Há explicação verificável de retry de controle vs best effort de dados.
+- [x] O import usa o módulo real `github.com/felipecartaxo/pd-go-projeto_final`.
+- [x] Assinaturas, erros, defaults e semântica descritos neste guia refletem `pkg/pubsub`.
+- [x] O exemplo de consumidor e eventos assíncronos está no contrato
+  `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md`; `cmd/demo`
+  é o exemplo executável de terminal.
+- [x] Este guia diferencia retry limitado de controle de dados best effort.
+- [ ] A execução manual dos exemplos em máquina limpa ainda deve ser registrada
+  conforme `docs/GUIA_EXECUCAO_TESTES.md`.
+- [ ] `go test -race ./...` ainda depende de disponibilizar um compilador C ao
+  CGO no ambiente de validação.

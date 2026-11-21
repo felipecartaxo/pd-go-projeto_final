@@ -2,7 +2,7 @@
 
 > **Estado da implementação:** T001–T030 concluídas: brokers UDP, biblioteca, demonstração e gerador de carga com exportação CSV/JSON.
 
-> **Status:** implementação incremental; T001–T030 estão concluídas nesta revisão.
+> **Validação atual:** `go test ./...` e `go vet ./...` aprovados. A execução de `go test -race ./...` depende de um compilador C disponível ao CGO; os cenários manuais em máquina limpa ainda precisam ter sua evidência registrada.
 > **Origem:** documento aprovado da Etapa 1 (10 páginas) e enunciado do projeto (5 páginas).
 > **Objetivo:** código Go no repositório, biblioteca pública utilizável, duas instâncias UDP, CLI de demonstração e testes/medições reproduzíveis.
 
@@ -19,13 +19,13 @@
 | `specs/001-middleware-pubsub-tempo-real/data-model.md` | Modelo de estado em memória e invariantes |
 | `specs/001-middleware-pubsub-tempo-real/contracts/wire-protocol.md` | Contrato JSON/UDP, tipos, ACK, erros, replicação |
 | `specs/001-middleware-pubsub-tempo-real/contracts/client-api.md` | Contrato da biblioteca Go para os consumidores do middleware |
-| `specs/001-middleware-pubsub-tempo-real/quickstart.md` | Roteiro de execução planejado e testes manuais |
+| `specs/001-middleware-pubsub-tempo-real/quickstart.md` | Roteiro de execução local e testes manuais |
 | `specs/001-middleware-pubsub-tempo-real/checklists/requirements.md` | Verificação de completude de especificação e entrega |
 | `docs/DECISOES_E_RISCOS.md` | Lacunas técnicas da Etapa 1 e propostas explícitas, sem mudança silenciosa |
 | `docs/PLANO_DE_TESTES.md` | Casos de teste funcionais e de falha/sobrecarga |
 | `docs/GUIA_EXECUCAO_TESTES.md` | Roteiro manual PowerShell, comandos, evidências e resultados esperados |
 | `docs/METRICAS.md` | Instrumentação e análise dos resultados, já visando a Etapa 3 |
-| `docs/BIBLIOTECA.md` | Guia público planejado para uso da biblioteca |
+| `docs/BIBLIOTECA.md` | Guia público da biblioteca Go implementada |
 | `docs/GUIA_CODEX.md` | Como conduzir o Codex por pequenas entregas orientadas às specs |
 | `docs/RASTREABILIDADE.md` | Requisitos do documento de origem → spec → teste |
 
@@ -33,9 +33,8 @@
 
 1. Descompacte **o conteúdo desta pasta na raiz do repositório Go** (não crie uma pasta `sdd-pubsub-go` dentro do projeto se quiser que o Codex leia `AGENTS.md` automaticamente).
 2. Leia `docs/DECISOES_E_RISCOS.md`, sobretudo **D01–D04**. São propostas transparentes de detalhamento, não fatos previamente aprovados pelo professor.
-3. Abra o Codex na raiz do repositório, leia `docs/GUIA_CODEX.md` e siga o próximo grupo pendente em `tasks.md`.
-4. Revise código e testes ao terminar cada conjunto de tarefas. Não solicite a implementação inteira em um único prompt.
-5. Ao implementar, substitua os exemplos marcados como **planejados** pelos comandos e assinaturas reais e teste-os antes de entregar.
+3. Para validar a entrega, siga `docs/GUIA_EXECUCAO_TESTES.md` e registre o ambiente e os resultados dos cenários manuais.
+4. Consulte `specs/001-middleware-pubsub-tempo-real/checklists/requirements.md` para as pendências de validação ainda abertas.
 
 **Não é necessário instalar GitHub Spec Kit:** esta estrutura é **inspirada** nas convenções do Spec Kit, mas pode ser lida diretamente pelo Codex com `AGENTS.md`. Se a equipe decidir instalar a CLI oficial do Spec Kit, inicialize a integração separadamente e **não sobrescreva** estas especificações aprovadas.
 
@@ -59,6 +58,10 @@ go run ./cmd/broker -id=2
 ```
 
 Execute os testes com `go test ./...`. Para a validação completa em Windows/PowerShell, incluindo dois brokers, demo, carga e failover, siga os comandos manuais em `docs/GUIA_EXECUCAO_TESTES.md`.
+
+O detector de corridas exige CGO com compilador C configurado. A ausência desse
+compilador no ambiente local não equivale a um resultado aprovado; consulte o
+checklist de requisitos antes de declarar a entrega concluída.
 
 ## Limites assumidos
 

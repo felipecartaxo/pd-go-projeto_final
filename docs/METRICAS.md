@@ -1,8 +1,8 @@
-# Métricas e avaliação (instrumentar na Etapa 2, analisar na Etapa 3)
+# Métricas e avaliação (instrumentadas na Etapa 2, analisar na Etapa 3)
 
 ## O que medir
 
-`broker.Server.Metrics()` retorna contadores de processamento/tentativa. `cmd/loadgen` exporta observações locais em CSV/JSON (`offered`, `sent`, `received`, `rate_limited`); `sent` só significa tentativa UDP local e `received` é observação no assinante, nunca prova de entrega completa.
+`broker.Server.Metrics()` retorna contadores de processamento/tentativa. `cmd/loadgen` exporta observações locais em CSV/JSON (`scenario`, `started_at`, `duration_ms`, `publishers`, `subscribers`, `offered`, `sent`, `received`, `rate_limited` e `note`); `sent` só significa tentativa UDP local e `received` é observação no assinante, nunca prova de entrega completa. A estrutura JSON é coberta por teste de contrato.
 
 | Métrica | Definição | Unidade / origem |
 |---|---|---|

@@ -1,15 +1,20 @@
 # Plano de testes para a Etapa 2 (e insumos da Etapa 3)
 
-**Princípio:** testar duas instâncias reais UDP, biblioteca e filas com comportamento reproduzível. Testes unitários validam invariantes; integração valida rede/concorrência. `go test -race` deve cobrir as rotas críticas.
+**Princípio:** testar duas instâncias reais UDP, biblioteca e filas com comportamento reproduzível. Testes unitários validam invariantes; integração valida rede/concorrência. `go test -race` deve cobrir as rotas críticas quando o ambiente dispuser de CGO e compilador C.
+
+**Estado atual:** `go test ./...` foi aprovado. O detector de corridas está
+pendente por ausência de compilador C no ambiente atual; os roteiros manuais
+ainda precisam ser registrados em máquina limpa.
 
 ## Ferramentas e execução
 
 - `go test ./...` — unitários e de integração curtos (preferir portas efêmeras e dados determinísticos).
 - `go test -race ./...` — detecção de races de estado de broker/cliente.
 - `go test ./integration -run <Teste> -v` — executar caso selecionado, conforme nomes reais criados por Codex.
-- `go run ./cmd/loadgen ...` — cenário prolongado e exportação para CSV/JSON, **depois** de implementado.
+- `go run ./cmd/loadgen ...` — cenário prolongado e exportação para CSV/JSON.
 
-Os comandos acima são **objetivos da implementação**, não devem ser descritos como já funcionais antes das tarefas correspondentes.
+Os comandos são implementados. Resultados de carga só devem ser tratados como
+evidência após registrar os parâmetros e o ambiente da execução.
 
 ## Matriz de aceitação funcional
 
