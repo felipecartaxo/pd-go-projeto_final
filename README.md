@@ -53,8 +53,8 @@
 Para iniciar os dois listeners locais nesta etapa:
 
 ```bash
-go run ./cmd/broker -id=1
-go run ./cmd/broker -id=2
+go run ./cmd/broker -id 1
+go run ./cmd/broker -id 2
 ```
 
 Execute os testes com `go test ./...`. Para a validação completa em Windows/PowerShell, incluindo dois brokers, demo, carga e failover, siga os comandos manuais em `docs/GUIA_EXECUCAO_TESTES.md`.
