@@ -31,7 +31,7 @@
 - [ ] `go test -race ./...` aprovado.
 - [ ] Dois brokers rodando em terminais diferentes.
 - [ ] API da biblioteca importável por projeto Go de exemplo.
-- [ ] Scripts/comandos de cenários testados em máquina limpa.
+- [ ] Comandos manuais de cenários testados em máquina limpa.
 - [ ] README e documentação da biblioteca correspondem ao código final.
 - [ ] Exportação de métricas com unidades e parâmetros de carga.
 - [ ] Limitações (best effort, período de failover, catálogo volátil) explícitas.

@@ -22,7 +22,7 @@ Documentos de origem:
 | Etapa 1 §3.3: PEER_SYNC, TTL, drop-oldest | RF01, RF09–RF13 | T005, T008–T009, T018–T019 | CT01, CT08, CT15–CT17 |
 | Enunciado item 3: tópicos, inscrições, descarte, buffer, transparência | RF02–RF05, RF11–RF12 | T006–T011, T021–T024 | CT02–CT09, CT14 |
 | Enunciado item 4: clientes/medições | RF15–RF16 | T027–T029 | W01–W04 |
-| Enunciado item 5.3: código e documentação | RF15–RF16, RNF06–RNF07 | T001–T002, T026–T030 | `docs/GUIA_EXECUCAO_TESTES.md` + `scripts/Executar-Testes.ps1` + quickstart |
+| Enunciado item 5.3: código e documentação | RF15–RF16, RNF06–RNF07 | T001–T002, T026–T030 | `docs/GUIA_EXECUCAO_TESTES.md` + quickstart |
 
 ## Pontos além do texto literal (propostas, não fatos da fonte)
 

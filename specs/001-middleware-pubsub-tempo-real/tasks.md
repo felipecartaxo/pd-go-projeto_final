@@ -46,7 +46,7 @@
 - [x] **T026 — CLI `cmd/broker`.** Flags conformes quickstart, contadores/logs, processamento de sinais. **Dep.:** T020. **Aceite:** dois terminais com B1 e B2 reais executam sem alterar código.
 - [x] **T027 — CLI `cmd/demo`.** Modes `create`, `delete`, `pub`, `sub`; selecionar broker preferido, mostrar IDs/feedback de erro. **Dep.:** T025. **Aceite:** comandos de `quickstart.md` executados manualmente para local e cross-broker.
 - [x] **T028 — CLI `cmd/loadgen` e exportação.** Cenários `fanout`, `burst`, `fairness`, `failover`, sementes/config fixas, timestamps, CSV/JSON com unidades e causas de descarte. **Dep.:** T025, T026. **Aceite:** testes com N produtores/M consumidores geram arquivo analisável.
-- [x] **T029 — Suite de aceitação, falhas e sobrecarga.** Implementar matriz de `docs/PLANO_DE_TESTES.md`, incluindo NO_SUBSCRIBERS, drop-oldest, B1 falho, B1 reiniciado e fairness. **Dep.:** T026–T028. **Aceite:** scripts/comandos reproduzíveis, resultados registrados, ausência de travamentos.
+- [x] **T029 — Suite de aceitação, falhas e sobrecarga.** Implementar matriz de `docs/PLANO_DE_TESTES.md`, incluindo NO_SUBSCRIBERS, drop-oldest, B1 falho, B1 reiniciado e fairness. **Dep.:** T026–T028. **Aceite:** comandos manuais reproduzíveis, resultados registrados, ausência de travamentos.
 - [x] **T030 — Documentação final da entrega.** Atualizar README, `docs/BIBLIOTECA.md`, quickstart, métricas e limitações para **código realmente testado**, não promessas. **Dep.:** T029. **Aceite:** colega em máquina limpa consegue instalar Go, rodar os brokers/demo/carga e importar biblioteca; explicar resultados e tradeoffs.
 
 ## Rastreabilidade resumida

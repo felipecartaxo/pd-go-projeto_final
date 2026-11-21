@@ -18,12 +18,16 @@ import (
 )
 
 type result struct {
-	Scenario                             string    `json:"scenario"`
-	StartedAt                            time.Time `json:"started_at"`
-	DurationMS                           int64     `json:"duration_ms"`
-	Publishers, Subscribers              int       `json:"publishers,subscribers"`
-	Offered, Sent, Received, RateLimited uint64    `json:"offered,sent,received,rate_limited"`
-	Note                                 string    `json:"note"`
+	Scenario    string    `json:"scenario"`
+	StartedAt   time.Time `json:"started_at"`
+	DurationMS  int64     `json:"duration_ms"`
+	Publishers  int       `json:"publishers"`
+	Subscribers int       `json:"subscribers"`
+	Offered     uint64    `json:"offered"`
+	Sent        uint64    `json:"sent"`
+	Received    uint64    `json:"received"`
+	RateLimited uint64    `json:"rate_limited"`
+	Note        string    `json:"note"`
 }
 
 func main() {
