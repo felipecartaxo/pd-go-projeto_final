@@ -19,14 +19,21 @@ import (
 
 type result struct {
 	Scenario    string    `json:"scenario"`
+	RunID       string    `json:"run_id"`
 	StartedAt   time.Time `json:"started_at"`
 	DurationMS  int64     `json:"duration_ms"`
 	Publishers  int       `json:"publishers"`
 	Subscribers int       `json:"subscribers"`
+	Topic       string    `json:"topic"`
 	Offered     uint64    `json:"offered"`
 	Sent        uint64    `json:"sent"`
 	Received    uint64    `json:"received"`
 	RateLimited uint64    `json:"rate_limited"`
+	GoVersion   string    `json:"go_version"`
+	GOOS        string    `json:"goos"`
+	GOARCH      string    `json:"goarch"`
+	CPUCount    int       `json:"cpu_count"`
+	GOMAXPROCS  int       `json:"gomaxprocs"`
 	Note        string    `json:"note"`
 }
 
@@ -39,6 +46,7 @@ func main() {
 	output := flag.String("output", "results.json", ".json or .csv")
 	topic := flag.String("topic", "loadgen/events", "topic")
 	gomaxprocs := flag.Int("gomaxprocs", 0, "maximum Go worker threads; 0 keeps the runtime default")
+	runID := flag.String("run-id", "", "optional identifier for comparing repeated executions")
 	flag.Parse()
 	if *gomaxprocs < 0 {
 		log.Fatal("-gomaxprocs must be zero or positive")
@@ -56,6 +64,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), *duration)
 	defer cancel()
 	started := time.Now()
+	executionID := *runID
+	if executionID == "" {
+		executionID = fmt.Sprintf("run-%d", started.UnixNano())
+	}
 	cfg := func(id string, prefer int) pubsub.Config {
 		return pubsub.Config{Brokers: [2]string{parts[0], parts[1]}, ClientID: id, PreferredBroker: prefer}
 	}
@@ -143,7 +155,25 @@ func main() {
 		_ = c.Close()
 	}
 	wg.Wait()
-	r := result{Scenario: *scenario, StartedAt: started, DurationMS: time.Since(started).Milliseconds(), Publishers: *publishers, Subscribers: *subscribers, Offered: offered, Sent: sent, Received: received, RateLimited: limited, Note: "sent is a local UDP send attempt; received is observed DELIVER; failover requires stopping/restarting B1 externally"}
+	r := result{
+		Scenario:    *scenario,
+		RunID:       executionID,
+		StartedAt:   started,
+		DurationMS:  time.Since(started).Milliseconds(),
+		Publishers:  *publishers,
+		Subscribers: *subscribers,
+		Topic:       *topic,
+		Offered:     offered,
+		Sent:        sent,
+		Received:    received,
+		RateLimited: limited,
+		GoVersion:   runtime.Version(),
+		GOOS:        runtime.GOOS,
+		GOARCH:      runtime.GOARCH,
+		CPUCount:    runtime.NumCPU(),
+		GOMAXPROCS:  runtime.GOMAXPROCS(0),
+		Note:        "sent is a local UDP send attempt; received is observed DELIVER; failover requires stopping/restarting B1 externally",
+	}
 	if err := writeResult(*output, r); err != nil {
 		log.Fatal(err)
 	}
@@ -158,10 +188,10 @@ func writeResult(path string, r result) error {
 	if strings.HasSuffix(path, ".csv") {
 		w := csv.NewWriter(f)
 		defer w.Flush()
-		if e = w.Write([]string{"scenario", "started_at", "duration_ms", "publishers", "subscribers", "offered", "sent", "received", "rate_limited", "note"}); e != nil {
+		if e = w.Write([]string{"scenario", "run_id", "started_at", "duration_ms", "publishers", "subscribers", "topic", "offered", "sent", "received", "rate_limited", "go_version", "goos", "goarch", "cpu_count", "gomaxprocs", "note"}); e != nil {
 			return e
 		}
-		return w.Write([]string{r.Scenario, r.StartedAt.Format(time.RFC3339Nano), fmt.Sprint(r.DurationMS), fmt.Sprint(r.Publishers), fmt.Sprint(r.Subscribers), fmt.Sprint(r.Offered), fmt.Sprint(r.Sent), fmt.Sprint(r.Received), fmt.Sprint(r.RateLimited), r.Note})
+		return w.Write([]string{r.Scenario, r.RunID, r.StartedAt.Format(time.RFC3339Nano), fmt.Sprint(r.DurationMS), fmt.Sprint(r.Publishers), fmt.Sprint(r.Subscribers), r.Topic, fmt.Sprint(r.Offered), fmt.Sprint(r.Sent), fmt.Sprint(r.Received), fmt.Sprint(r.RateLimited), r.GoVersion, r.GOOS, r.GOARCH, fmt.Sprint(r.CPUCount), fmt.Sprint(r.GOMAXPROCS), r.Note})
 	}
 	return json.NewEncoder(f).Encode(r)
 }

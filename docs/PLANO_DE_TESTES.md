@@ -69,7 +69,7 @@ evidência após registrar os parâmetros e o ambiente da execução.
 
 ## Ambiente e reprodutibilidade
 
-Registrar versão Go, SO, CPU, RAM, máquina(s), portas, número de publishers/subscribers, duração, tamanho médio dos datagramas, defaults de filas/limiter, percentis e parâmetros de heartbeat. **Não comparar timestamps de máquinas diferentes sem sincronização de relógios**; no localhost o medidor pode usar timestamps monotônicos relativos no mesmo processo para medição mais precisa.
+Registrar `run_id`, versão Go, SO, arquitetura, número de CPUs, `GOMAXPROCS`, tópico, portas, número de publishers/subscribers e duração. Use `-run-id` para repetir uma comparação com o mesmo identificador de experimento. O CSV exportado pelo `loadgen` já inclui esses metadados, exceto RAM e tamanho médio dos datagramas. **Não comparar timestamps de máquinas diferentes sem sincronização de relógios**; no localhost o medidor pode usar timestamps monotônicos relativos no mesmo processo para medição mais precisa.
 
 ## Critério de sucesso
 

@@ -78,7 +78,8 @@ Publique pelo B1:
 
 ```powershell
 # Terminal 5
-go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances' -payload '{\"valor\":120,\"lote\":3}'
+Set-Content -Path .\payload.json -Value '{"valor":120,"lote":3}' -NoNewline
+go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances' -payload-file .\payload.json
 ```
 
 O Terminal 4 deve imprimir uma linha semelhante a:
@@ -106,7 +107,8 @@ Depois de alguns segundos, interrompa B1 com `Ctrl+C` no Terminal 1. Aguarde
 cerca de cinco segundos para a detecção e o re-registro no B2 e publique:
 
 ```powershell
-go run ./cmd/demo -mode pub -client-id pub-2 -prefer 2 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances' -payload '{\"valor\":130,\"lote\":3}'
+Set-Content -Path .\payload.json -Value '{"valor":130,"lote":3}' -NoNewline
+go run ./cmd/demo -mode pub -client-id pub-2 -prefer 2 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances' -payload-file .\payload.json
 ```
 
 O assinante de failover deve mostrar o payload com `"valor":130`. Perdas no
@@ -129,9 +131,9 @@ Com os dois brokers ativos, execute cada cenário em um terminal. Use tópicos
 distintos para evitar resultados de execuções anteriores:
 
 ```powershell
-go run ./cmd/loadgen -scenario burst -duration 15s -publishers 5 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/burst-manual' -gomaxprocs 1 -output results-burst.csv
-go run ./cmd/loadgen -scenario fanout -duration 30s -publishers 1 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/fanout-manual' -gomaxprocs 1 -output results-fanout.csv
-go run ./cmd/loadgen -scenario fairness -duration 30s -publishers 2 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/fairness-manual' -gomaxprocs 1 -output results-fairness.csv
+go run ./cmd/loadgen -scenario burst -duration 15s -publishers 5 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/burst-manual' -run-id burst-001 -gomaxprocs 1 -output results-burst.csv
+go run ./cmd/loadgen -scenario fanout -duration 30s -publishers 1 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/fanout-manual' -run-id fanout-001 -gomaxprocs 1 -output results-fanout.csv
+go run ./cmd/loadgen -scenario fairness -duration 30s -publishers 2 -subscribers 20 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'loadgen/fairness-manual' -run-id fairness-001 -gomaxprocs 1 -output results-fairness.csv
 ```
 
 Para estresse, aumente explicitamente para 100 assinantes em `fanout` e 30 em

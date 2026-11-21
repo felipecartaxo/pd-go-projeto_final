@@ -2,7 +2,7 @@
 
 ## O que medir
 
-`broker.Server.Metrics()` retorna contadores de processamento/tentativa. `cmd/loadgen` exporta observações locais em CSV/JSON (`scenario`, `started_at`, `duration_ms`, `publishers`, `subscribers`, `offered`, `sent`, `received`, `rate_limited` e `note`); `sent` só significa tentativa UDP local e `received` é observação no assinante, nunca prova de entrega completa. A estrutura JSON é coberta por teste de contrato.
+`broker.Server.Metrics()` retorna contadores de processamento/tentativa. `cmd/loadgen` exporta observações locais em CSV/JSON (`scenario`, `run_id`, `started_at`, `duration_ms`, `publishers`, `subscribers`, `topic`, `offered`, `sent`, `received`, `rate_limited`, `go_version`, `goos`, `goarch`, `cpu_count`, `gomaxprocs` e `note`); `sent` só significa tentativa UDP local e `received` é observação no assinante, nunca prova de entrega completa. Cada execução recebe um `run_id` automático quando não informado por `-run-id`.
 
 | Métrica | Definição | Unidade / origem |
 |---|---|---|

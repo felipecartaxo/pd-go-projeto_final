@@ -48,7 +48,8 @@ go run ./cmd/demo -mode sub -client-id sub-2 -prefer 2 -brokers 127.0.0.1:9001,1
 Terminal 5:
 
 ```bash
-go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic leilao/lances -payload '{"valor":120,"lote":3}'
+Set-Content -Path .\payload.json -Value '{"valor":120,"lote":3}' -NoNewline
+go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic leilao/lances -payload-file .\payload.json
 ```
 
 Esperado: assinante conectado ao B2 vê `DELIVER` com `topic`, `message_id` e JSON. **Não** inferir garantia de entrega de um teste que funcionou.
@@ -60,7 +61,7 @@ Esperado: assinante conectado ao B2 vê `DELIVER` com `topic`, `message_id` e JS
 3. Execute o gerador de carga para rajadas e observe `RATE_LIMITED` e contadores de filas.
 
 ```bash
-go run ./cmd/loadgen -scenario burst -duration 15s -publishers 5 -subscribers 20 -brokers 127.0.0.1:9001,127.0.0.1:9002 -output results-burst.csv
+go run ./cmd/loadgen -scenario burst -duration 15s -publishers 5 -subscribers 20 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic loadgen/burst-manual -run-id burst-001 -gomaxprocs 1 -output results-burst.csv
 ```
 
 ## 5. Failover transparente
@@ -89,9 +90,9 @@ Documentar testes de integração que dependam de portas efêmeras/injeção de 
 ## 7. Execuções de desempenho sugeridas
 
 ```bash
-go run ./cmd/loadgen -scenario fanout -duration 30s -publishers 1 -subscribers 100 -brokers 127.0.0.1:9001,127.0.0.1:9002 -output results-fanout.csv
+go run ./cmd/loadgen -scenario fanout -duration 30s -publishers 1 -subscribers 20 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic loadgen/fanout-manual -run-id fanout-001 -gomaxprocs 1 -output results-fanout.csv
 
-go run ./cmd/loadgen -scenario fairness -duration 30s -publishers 2 -subscribers 30 -brokers 127.0.0.1:9001,127.0.0.1:9002 -output results-fairness.csv
+go run ./cmd/loadgen -scenario fairness -duration 30s -publishers 2 -subscribers 20 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic loadgen/fairness-manual -run-id fairness-001 -gomaxprocs 1 -output results-fairness.csv
 ```
 
 Os argumentos efetivos, dados de hardware e resultados reais devem estar descritos no README final, com exemplos de CSV/JSON gerados pelo código, sem inventar métricas.

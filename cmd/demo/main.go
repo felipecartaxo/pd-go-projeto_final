@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ func main() {
 	prefer := flag.Int("prefer", 1, "preferred broker (1 or 2)")
 	topic := flag.String("topic", "", "topic")
 	payload := flag.String("payload", "{}", "JSON payload for pub")
+	payloadFile := flag.String("payload-file", "", "read JSON payload from a UTF-8 file")
 	flag.Parse()
 	parts := strings.Split(*brokers, ",")
 	if len(parts) != 2 || *topic == "" {
@@ -42,7 +44,10 @@ func main() {
 	case "unsubscribe":
 		err = c.Unsubscribe(ctx, *topic)
 	case "pub":
-		var raw json.RawMessage = []byte(*payload)
+		raw, readErr := resolvePayload(*payload, *payloadFile)
+		if readErr != nil {
+			log.Fatal(readErr)
+		}
 		_, err = c.Publish(ctx, *topic, raw)
 	case "sub":
 		ch, e := c.Subscribe(ctx, *topic)
@@ -64,4 +69,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func resolvePayload(payload, payloadFile string) (json.RawMessage, error) {
+	if payloadFile == "" {
+		return json.RawMessage(payload), nil
+	}
+	data, err := os.ReadFile(payloadFile)
+	if err != nil {
+		return nil, fmt.Errorf("read payload file: %w", err)
+	}
+	return json.RawMessage(data), nil
 }
