@@ -20,6 +20,24 @@ import "github.com/felipecartaxo/pd-go-projeto_final/pkg/pubsub"
 
 O pacote expõe `Client`, `Config`, `Message`, `Event`, erros e os métodos documentados neste guia.
 
+## Saídas da CLI de demonstração
+
+O comando `cmd/demo` apresenta os seguintes resultados legíveis:
+
+```text
+CREATE_TOPIC OK topic=<topic>
+DELETE_TOPIC OK topic=<topic>
+UNSUBSCRIBE OK topic=<topic>
+PUBLISH sent message_id=<message_id> topic=<topic>
+NO_SUBSCRIBERS topic=<topic> message_id=<message_id>
+RATE_LIMITED topic=<topic> message_id=<message_id> code=RATE_LIMITED
+```
+
+No modo `sub`, entregas aparecem como `topic message_id payload`. O aviso
+`FAILOVER_OK` continua indicando migração e reinscrição confirmada no broker
+ativo. `PUBLISH sent` significa apenas que o datagrama foi enviado pelo socket
+local; não confirma entrega.
+
 ## Uso esperado
 
 ```go

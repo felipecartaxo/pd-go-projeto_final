@@ -55,6 +55,12 @@ Terminal 3:
 go run ./cmd/demo -mode create -client-id admin-1 -prefer 1 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic leilao/lances
 ```
 
+Saída esperada:
+
+```text
+CREATE_TOPIC OK topic=leilao/lances
+```
+
 Terminal 4 (deixe executando):
 
 ```bash
@@ -70,12 +76,31 @@ Set-Content -Path .\payload.json -Value '{"valor":120,"lote":3}' -NoNewline
 go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers 127.0.0.1:9001,127.0.0.1:9002 -topic leilao/lances -payload-file .\payload.json
 ```
 
-Esperado: assinante conectado ao B2 vê `DELIVER` com `topic`, `message_id` e JSON. **Não** inferir garantia de entrega de um teste que funcionou.
+Saída esperada no terminal 5:
+
+```text
+PUBLISH sent message_id=<message_id> topic=leilao/lances
+```
+
+Saída esperada no assinante conectado ao B2:
+
+```text
+leilao/lances <message_id> {"valor":120,"lote":3}
+```
+
+**Não** inferir garantia de entrega de um teste que funcionou.
 
 ## 4. Sem assinantes e limite de taxa
 
 1. Pare o assinante ou faça unsubscribe com `-mode=unsubscribe` se implementado pela CLI (a API deve suportar `Unsubscribe`).
-2. Publique novamente no tópico existente. Esperado: broker descarta e publica evento `NO_SUBSCRIBERS` no cliente publicador, com ACK automático.
+2. Publique novamente no tópico existente. Esperado no terminal do publicador:
+
+```text
+PUBLISH sent message_id=<message_id> topic=leilao/lances
+NO_SUBSCRIBERS topic=leilao/lances message_id=<message_id>
+```
+
+A ausência do aviso pode representar perda UDP; o broker tenta ACK/retry limitado e a biblioteca ACKa o aviso recebido.
 3. Execute o gerador de carga para rajadas e observe `RATE_LIMITED` e contadores de filas.
 
 ```bash

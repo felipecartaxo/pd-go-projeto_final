@@ -49,6 +49,7 @@
 - B1 permanece o único coordenador. B2 encaminha create/delete quando B1 está vivo; se não estiver, responde `COORDINATOR_UNAVAILABLE` e continua atendendo publish/subscribe para tópicos conhecidos. `OK` de mutação em B1 é commit local, não confirmação imediata da réplica.
 - A biblioteca mantém um socket/leitor UDP ativo, correlação de controle e failover com re-registro/reinscrição. Publicações emitidas antes/durante a troca não são repetidas.
 - `cmd/demo` executa create/delete/pub/sub/unsubscribe; `cmd/loadgen` executa fanout, burst, fairness ou failover e grava CSV/JSON. Em failover, interrompa/reinicie B1 externamente; o resultado não afirma perda zero.
+- A CLI `cmd/demo` mostra confirmações `CREATE_TOPIC OK`, `DELETE_TOPIC OK` e `UNSUBSCRIBE OK`, além de `PUBLISH sent message_id=... topic=...`. Publicações podem receber `NO_SUBSCRIBERS` ou `RATE_LIMITED` durante uma breve janela assíncrona; ausências não são confirmação de entrega.
 
 Para iniciar os dois listeners locais nesta etapa:
 

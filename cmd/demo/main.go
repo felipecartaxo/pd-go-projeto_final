@@ -39,16 +39,30 @@ func main() {
 	switch *mode {
 	case "create":
 		err = c.CreateTopic(ctx, *topic)
+		if err == nil {
+			fmt.Print(topicActionOutput("CREATE_TOPIC", *topic))
+		}
 	case "delete":
 		err = c.DeleteTopic(ctx, *topic)
+		if err == nil {
+			fmt.Print(topicActionOutput("DELETE_TOPIC", *topic))
+		}
 	case "unsubscribe":
 		err = c.Unsubscribe(ctx, *topic)
+		if err == nil {
+			fmt.Print(topicActionOutput("UNSUBSCRIBE", *topic))
+		}
 	case "pub":
 		raw, readErr := resolvePayload(*payload, *payloadFile)
 		if readErr != nil {
 			log.Fatal(readErr)
 		}
-		_, err = c.Publish(ctx, *topic, raw)
+		var messageID string
+		messageID, err = c.Publish(ctx, *topic, raw)
+		if err == nil {
+			fmt.Print(publishOutput(*topic, messageID))
+			waitForPublishEvents(ctx, c, 1*time.Second)
+		}
 	case "sub":
 		ch, e := c.Subscribe(ctx, *topic)
 		if e != nil {
@@ -85,4 +99,45 @@ func resolvePayload(payload, payloadFile string) (json.RawMessage, error) {
 		return nil, fmt.Errorf("read payload file: %w", err)
 	}
 	return json.RawMessage(data), nil
+}
+
+func topicActionOutput(action, topic string) string {
+	return fmt.Sprintf("%s OK topic=%s\n", action, topic)
+}
+
+func publishOutput(topic, messageID string) string {
+	return fmt.Sprintf("PUBLISH sent message_id=%s topic=%s\n", messageID, topic)
+}
+
+func eventOutput(ev pubsub.Event) string {
+	switch ev.Type {
+	case pubsub.EventNoSubscribers:
+		return fmt.Sprintf("NO_SUBSCRIBERS topic=%s message_id=%s\n", ev.Topic, ev.MessageID)
+	case pubsub.EventRateLimited:
+		return fmt.Sprintf("RATE_LIMITED topic=%s message_id=%s code=%s\n", ev.Topic, ev.MessageID, ev.Code)
+	case pubsub.EventError:
+		return fmt.Sprintf("ERROR code=%s topic=%s message_id=%s\n", ev.Code, ev.Topic, ev.MessageID)
+	case pubsub.EventUnavailable:
+		return fmt.Sprintf("UNAVAILABLE %v\n", ev.Err)
+	default:
+		return fmt.Sprintf("event %s code=%s topic=%s message_id=%s\n", ev.Type, ev.Code, ev.Topic, ev.MessageID)
+	}
+}
+
+func waitForPublishEvents(ctx context.Context, c *pubsub.Client, duration time.Duration) {
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+	for {
+		select {
+		case ev, ok := <-c.Events():
+			if !ok {
+				return
+			}
+			fmt.Print(eventOutput(ev))
+		case <-timer.C:
+			return
+		case <-ctx.Done():
+			return
+		}
+	}
 }

@@ -67,6 +67,12 @@ Crie o tópico pelo B1:
 go run ./cmd/demo -mode create -client-id admin-1 -prefer 1 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances'
 ```
 
+Saída esperada no Terminal 3:
+
+```text
+CREATE_TOPIC OK topic=leilao/lances
+```
+
 `TOPIC_ALREADY_EXISTS` é esperado se o tópico já existir; nesse caso, prossiga.
 Em outro terminal, assine pelo B2 e mantenha o processo aberto:
 
@@ -81,6 +87,12 @@ Publique pelo B1:
 # Terminal 5
 Set-Content -Path .\payload.json -Value '{"valor":120,"lote":3}' -NoNewline
 go run ./cmd/demo -mode pub -client-id pub-1 -prefer 1 -brokers '127.0.0.1:9001,127.0.0.1:9002' -topic 'leilao/lances' -payload-file .\payload.json
+```
+
+Saída esperada no Terminal 5:
+
+```text
+PUBLISH sent message_id=<message_id> topic=leilao/lances
 ```
 
 O Terminal 4 deve imprimir uma linha semelhante a:
@@ -150,9 +162,10 @@ imprimir `wrote ...`.
   socket não prova recebimento pelo assinante.
 - Dados podem se perder em sobrecarga, falha ou troca de broker; não há replay
   nem deduplicação obrigatória.
-- `NO_SUBSCRIBERS` é assíncrono. A CLI `demo -mode pub` termina logo após o
-  envio; a evidência reproduzível é o teste
-  `TestNoSubscribersRetriesUntilACKOrLimit`.
+- `NO_SUBSCRIBERS` é assíncrono. A CLI `demo -mode pub` aguarda até 1 segundo
+  por notificações e pode mostrar
+  `NO_SUBSCRIBERS topic=<topic> message_id=<message_id>`. Se o aviso não
+  chegar por perda de UDP, ela termina após a janela sem declaração positiva.
 - Nos CSVs, `sent` é tentativa UDP local e `received` é entrega observada pelo
   cliente; nenhum dos dois é garantia fim a fim.
 - Os testes unitários de rate limit e filas são a evidência determinística das
