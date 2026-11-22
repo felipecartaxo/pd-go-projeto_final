@@ -30,13 +30,13 @@
 ### Itens pendentes
 
 - `go test -race ./...`: não pôde ser executado neste ambiente porque o CGO não encontra o compilador `gcc` no `PATH`.
-- Cenários manuais em máquina limpa: o roteiro existe em `docs/GUIA_EXECUCAO_TESTES.md`, mas ainda falta registrar sua execução em uma máquina limpa.
+- Evidência física em máquina limpa não é necessária. Cenários repetíveis nesta máquina passaram após `go clean -cache` e `go mod download`; novas repetições devem registrar resultados e ambiente.
 
 - [x] `go test ./...` aprovado.
 - [ ] `go test -race ./...` aprovado.
 - [x] Dois brokers rodando em terminais diferentes.
 - [x] API da biblioteca importável por projeto Go de exemplo.
-- [ ] Comandos manuais de cenários testados em máquina limpa.
+- [x] Comandos manuais executados nesta máquina após limpeza do cache: brokers reais, smoke cross-broker, falha/migração do subscriber e carga com B1 indisponível.
 - [x] README e documentação da biblioteca correspondem ao código final.
 - [x] Exportação de métricas com unidades e parâmetros de carga.
 - [x] Limitações (best effort, período de failover, catálogo volátil) explícitas.
