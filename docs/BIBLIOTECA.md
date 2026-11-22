@@ -73,6 +73,13 @@ func main() {
 | `Events()` | Canal assíncrono de eventos de status/erro/no subscribers/rate limited. |
 | `Close()` | Libera socket/goroutines e recursos. |
 
+Durante failover, o cliente registra novamente o `client_id` no broker alternativo
+e tenta restaurar todas as inscrições desejadas antes de confirmar
+`BrokerChanged`. Uma inscrição que falhar permanece nessa lista desejada e é
+tentada novamente pelos ciclos de heartbeat. Enquanto houver falha parcial,
+`Events()` informa `Unavailable`; não é prometida entrega de publicações
+perdidas durante a troca.
+
 ## Limites e recomendações de uso
 
 - `payload` deve ser JSON válido; mensagem toda precisa caber em **1200 bytes** por default, incluídos metadados.

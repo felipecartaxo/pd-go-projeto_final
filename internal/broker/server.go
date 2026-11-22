@@ -4,6 +4,7 @@ package broker
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 	"sync"
 	"time"
@@ -150,6 +151,7 @@ func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.En
 			return response, s.state.replyAddressLocked(env.ClientID, source), true
 		}
 		s.state.registerLocked(env.ClientID, source, now)
+		slog.Info("session registered", "broker_id", s.config.ID, "client_id", env.ClientID, "udp_addr", source.String())
 		response := okReply(env)
 		s.state.replies.Put(key, response)
 		return response, s.state.replyAddressLocked(env.ClientID, source), true
@@ -194,6 +196,9 @@ func (s *Server) handle(env protocol.Envelope, source *net.UDPAddr) (protocol.En
 		response = s.state.deleteTopicLocked(s.config.ID, env)
 	case protocol.TypeSubscribe:
 		response = s.state.subscribeLocked(env)
+		if response.Type == protocol.TypeOK {
+			slog.Info("subscription active", "broker_id", s.config.ID, "client_id", env.ClientID, "topic", env.Topic)
+		}
 	case protocol.TypeUnsubscribe:
 		response = s.state.unsubscribeLocked(env)
 	default:

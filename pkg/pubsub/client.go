@@ -55,16 +55,18 @@ type Event struct {
 }
 type subscription struct{ ch chan Message }
 type Client struct {
-	cfg     Config
-	mu      sync.Mutex
-	conn    *net.UDPConn
-	active  int
-	closed  bool
-	pending map[string]chan protocol.Envelope
-	subs    map[string]*subscription
-	events  chan Event
-	done    chan struct{}
-	wg      sync.WaitGroup
+	cfg                  Config
+	mu                   sync.Mutex
+	conn                 *net.UDPConn
+	active               int
+	closed               bool
+	pending              map[string]chan protocol.Envelope
+	subs                 map[string]*subscription
+	restoring            map[string]bool
+	brokerChangedPending bool
+	events               chan Event
+	done                 chan struct{}
+	wg                   sync.WaitGroup
 }
 
 func NewClient(cfg Config) (*Client, error) {
@@ -97,7 +99,15 @@ func NewClient(cfg Config) (*Client, error) {
 	if cfg.EventQueueCapacity <= 0 {
 		cfg.EventQueueCapacity = 64
 	}
-	return &Client{cfg: cfg, active: -1, pending: make(map[string]chan protocol.Envelope), subs: make(map[string]*subscription), events: make(chan Event, cfg.EventQueueCapacity), done: make(chan struct{})}, nil
+	return &Client{
+		cfg:       cfg,
+		active:    -1,
+		pending:   make(map[string]chan protocol.Envelope),
+		subs:      make(map[string]*subscription),
+		restoring: make(map[string]bool),
+		events:    make(chan Event, cfg.EventQueueCapacity),
+		done:      make(chan struct{}),
+	}, nil
 }
 
 func (c *Client) Connect(ctx context.Context) error {
@@ -133,17 +143,22 @@ func (c *Client) activate(ctx context.Context, index int) error {
 		return ErrClosed
 	}
 	old := c.conn
+	oldActive := c.active
 	c.conn = conn
 	c.active = index
 	c.mu.Unlock()
-	if old != nil {
-		old.Close()
-	}
 	c.wg.Add(1)
 	go c.readLoop(conn)
 	if err := c.control(ctx, protocol.TypeRegister, ""); err != nil {
 		conn.Close()
+		c.mu.Lock()
+		c.conn = old
+		c.active = oldActive
+		c.mu.Unlock()
 		return err
+	}
+	if old != nil {
+		old.Close()
 	}
 	return nil
 }
@@ -201,6 +216,17 @@ func (c *Client) emit(event Event) {
 	}
 }
 func (c *Client) Events() <-chan Event { return c.events }
+
+// ActiveBroker returns the 1-based broker currently selected by this client.
+// It returns 0 while no broker is active.
+func (c *Client) ActiveBroker() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.closed || c.conn == nil {
+		return 0
+	}
+	return c.active + 1
+}
 
 func (c *Client) control(ctx context.Context, typ protocol.Type, topic string) error {
 	env := protocol.Envelope{Version: protocol.Version1, Type: typ, RequestID: newID(), ClientID: c.cfg.ClientID, Topic: topic}
@@ -271,6 +297,7 @@ func (c *Client) Subscribe(ctx context.Context, topic string) (<-chan Message, e
 	ch := make(chan Message, c.cfg.DeliveryQueueCapacity)
 	c.mu.Lock()
 	c.subs[topic] = &subscription{ch: ch}
+	delete(c.restoring, topic)
 	c.mu.Unlock()
 	return ch, nil
 }
@@ -283,6 +310,7 @@ func (c *Client) Unsubscribe(ctx context.Context, topic string) error {
 		delete(c.subs, topic)
 		close(sub.ch)
 	}
+	delete(c.restoring, topic)
 	c.mu.Unlock()
 	return nil
 }
@@ -310,9 +338,23 @@ func (c *Client) heartbeatLoop() {
 		case <-ticker.C:
 			ctx, cancel := context.WithTimeout(context.Background(), c.cfg.HeartbeatTimeout)
 			err := c.control(ctx, protocol.TypeHeartbeat, "")
-			cancel()
 			if err != nil {
+				cancel()
 				c.failover()
+				continue
+			}
+			restoreErr := c.restoreSubscriptions(ctx)
+			cancel()
+			if restoreErr != nil {
+				c.emit(Event{Type: EventUnavailable, Err: restoreErr})
+				continue
+			}
+			c.mu.Lock()
+			changed := c.brokerChangedPending
+			c.brokerChangedPending = false
+			c.mu.Unlock()
+			if changed {
+				c.emit(Event{Type: EventBrokerChanged})
 			}
 		}
 	}
@@ -332,15 +374,42 @@ func (c *Client) failover() {
 		return
 	}
 	c.mu.Lock()
-	topics := make([]string, 0, len(c.subs))
 	for topic := range c.subs {
+		c.restoring[topic] = true
+	}
+	c.brokerChangedPending = true
+	c.mu.Unlock()
+	if err := c.restoreSubscriptions(ctx); err != nil {
+		c.emit(Event{Type: EventUnavailable, Err: err})
+		return
+	}
+	c.emit(Event{Type: EventBrokerChanged})
+	c.mu.Lock()
+	c.brokerChangedPending = false
+	c.mu.Unlock()
+}
+
+func (c *Client) restoreSubscriptions(ctx context.Context) error {
+	c.mu.Lock()
+	topics := make([]string, 0, len(c.restoring))
+	for topic := range c.restoring {
 		topics = append(topics, topic)
 	}
 	c.mu.Unlock()
+
+	var restoreErr error
 	for _, topic := range topics {
-		_ = c.control(ctx, protocol.TypeSubscribe, topic)
+		if err := c.control(ctx, protocol.TypeSubscribe, topic); err != nil {
+			if restoreErr == nil {
+				restoreErr = err
+			}
+			continue
+		}
+		c.mu.Lock()
+		delete(c.restoring, topic)
+		c.mu.Unlock()
 	}
-	c.emit(Event{Type: EventBrokerChanged})
+	return restoreErr
 }
 func (c *Client) Close() error {
 	c.mu.Lock()

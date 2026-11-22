@@ -127,5 +127,9 @@ Consulte `docs/BIBLIOTECA.md` para a semântica e as limitações da API.
 4. `Events()` e canais de tópicos possuem capacidade finita; a biblioteca não deixa o loop UDP bloqueado.
 5. Notificações repetidas `NO_SUBSCRIBERS` são ACKadas. Pode haver mais de uma observação do evento, mas recomendado dedup limitado no lado do cliente para o mesmo `request_id`.
 6. Contexto/close interrompem loops e timeouts; os testes concorrentes passam.
+7. Após uma troca de broker, inscrições desejadas são restauradas pelo
+   cliente. `BrokerChanged` só é emitido após todas essas reinscrições terem
+   recebido confirmação; falhas parciais emitirão `Unavailable` e serão
+   retentadas pelo heartbeat sem retransmitir publicações já emitidas.
    A execução de `go test -race ./...` continua pendente enquanto o ambiente
    não fornecer um compilador C ao CGO.

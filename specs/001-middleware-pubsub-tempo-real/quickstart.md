@@ -18,6 +18,24 @@
 Terminal 1:
 
 ```bash
+
+Saída esperada após o modo iniciar:
+
+```text
+subscribed client_id=sub-failover topic=falha/teste broker=1
+```
+
+Após migrar para o Broker 2, o mesmo terminal deverá mostrar:
+
+```text
+FAILOVER_OK client_id=sub-failover migrated_to_broker=2 topic=falha/teste
+```
+
+No terminal do Broker 2, cada reinscrição confirmada será registrada como:
+
+```text
+subscription active broker_id=2 client_id=sub-failover topic=falha/teste
+```bash
 go run ./cmd/broker -id 1 -listen 127.0.0.1:9001 -peer 127.0.0.1:9002
 ```
 

@@ -55,11 +55,16 @@ func main() {
 			err = e
 			break
 		}
+		fmt.Printf("subscribed client_id=%s topic=%s broker=%d\n", *clientID, *topic, c.ActiveBroker())
 		for {
 			select {
 			case m := <-ch:
 				fmt.Printf("%s %s %s\n", m.Topic, m.MessageID, m.Payload)
 			case ev := <-c.Events():
+				if ev.Type == pubsub.EventBrokerChanged {
+					fmt.Printf("FAILOVER_OK client_id=%s migrated_to_broker=%d topic=%s\n", *clientID, c.ActiveBroker(), *topic)
+					continue
+				}
 				fmt.Printf("event %s %s\n", ev.Type, ev.Code)
 			}
 		}
