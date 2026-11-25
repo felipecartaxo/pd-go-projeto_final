@@ -1,0 +1,2 @@
+scenario,run_id,started_at,duration_ms,publishers,subscribers,topic,offered,sent,received,rate_limited,go_version,goos,goarch,cpu_count,gomaxprocs,note
+burst,professor-burst-001,2026-11-25T19:34:11.4094467-03:00,10000,2,20,professor/rajada,10490,10490,51940,0,go1.26.1,windows,amd64,12,1,sent is a local UDP send attempt; received is observed DELIVER; failover requires stopping/restarting B1 externally
